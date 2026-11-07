@@ -24,9 +24,13 @@ h1 span{color:var(--accent)}
 #plan,#view3d{position:absolute;inset:0;width:100%;height:100%}
 #view3d{display:none}
 .hint{position:absolute;left:10px;bottom:8px;font-size:11px;color:var(--muted);pointer-events:none;background:#fffd;padding:3px 7px;border-radius:8px}
-#sel{display:none;margin:8px 10px 0;background:#fff;border-radius:14px;padding:8px 10px;box-shadow:0 1px 4px #0001;gap:6px;align-items:center;flex-wrap:wrap}
+#sel{display:none;position:absolute;left:8px;right:8px;bottom:8px;z-index:5;background:#fff;border-radius:14px;padding:8px 10px;box-shadow:0 4px 18px #0003;gap:6px;align-items:center;flex-wrap:wrap}
 #sel.on{display:flex}
-#sel b{font-size:14px;width:100%}
+#sel b{font-size:14px;flex:1}
+#sel .x{border:0;background:#f1ebe5;border-radius:50%;width:28px;height:28px;font-size:13px}
+#sel .row2{width:100%;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.vt{position:absolute;top:8px;right:8px;z-index:4;display:none;box-shadow:0 1px 4px #0002;background:#fff}
+#sel.on~.hint{display:none}
 #sel label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px}
 #sel input[type=number]{width:56px;padding:5px;border:1px solid var(--line);border-radius:8px;font-size:14px}
 #sel input[type=color]{width:32px;height:30px;border:0;padding:0;background:none}
@@ -68,10 +72,9 @@ dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 <div id="stage">
   <canvas id="plan"></canvas>
   <div id="view3d"></div>
-  <div class="hint" id="hint">Aşağıdan mobilya ekle • parmağınla sürükle • dokunarak seç</div>
-</div>
-<div id="sel">
-  <b id="sname"></b>
+  <button class="btn vt" id="vtog">👁 Kesit görünüm</button>
+  <div id="sel">
+  <b id="sname"></b><button class="x" id="sclose">✕</button>
   <label>En<input id="sw" type="number" min="5" max="2000"></label>
   <label id="lsd">Derinlik<input id="sd" type="number" min="5" max="2000"></label>
   <label>Yükseklik<input id="sh" type="number" min="1" max="500"></label>
@@ -81,6 +84,8 @@ dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
   <button class="btn" id="srot">↻ Döndür</button>
   <button class="btn" id="scopy">⧉ Kopyala</button>
   <button class="btn red" id="sdel">🗑 Sil</button>
+</div>
+  <div class="hint" id="hint">Aşağıdan mobilya ekle • parmağınla sürükle • dokunarak seç</div>
 </div>
 <div class="palette" id="pal"></div>
 
@@ -152,6 +157,7 @@ try{S=JSON.parse(localStorage.getItem('odam-v1'))}catch(e){}
 if(!S||!S.items)S={W:400,L:350,H:260,items:[]};
 if(!S.kind)S.kind='room';
 if(!S.noWall)S.noWall={};
+if(!S.view3)S.view3='cut';
 let selId=null, drag=null, mode='2d';
 const save=()=>localStorage.setItem('odam-v1',JSON.stringify(S));
 const cur=()=>S.items.find(i=>i.id===selId);
@@ -237,6 +243,7 @@ function selUI(){
 }));
 $('sc').addEventListener('input',()=>{const it=cur(); if(it){it.color=$('sc').value; changed();}});
 $('srot').onclick=()=>{const it=cur(); if(it&&OPEN[it.type]){it.flip=!it.flip;changed();return} if(it){it.rot=(it.rot+90)%360; clampIt(it); changed();}};
+$('sclose').onclick=()=>{selId=null;selUI();draw();if(mode==='3d')build3d()};
 $('sdel').onclick=()=>{S.items=S.items.filter(i=>i.id!==selId); selId=null; changed();};
 $('scopy').onclick=()=>{const it=cur(); if(it) addItem({...it});};
 
@@ -360,6 +367,7 @@ function init3d(){
   const sun=new THREE.DirectionalLight('#fff4e5',1.6); sun.position.set(3,7,4); sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048); sun.shadow.bias=-0.0005; scene.add(sun); scene.userData.sun=sun;
   roomG=new THREE.Group(); scene.add(roomG);
+  bind3d();
   resize3d(); resetCam();
 }
 function resetCam(){
@@ -406,6 +414,7 @@ function makeItem(it){
     default:box(g,w,h,d,c,0,h/2,0);
   }
   g.position.set(it.x/100-S.W/200,0,it.y/100-S.L/200); g.rotation.y=-it.rot*Math.PI/180;
+  g.userData.id=it.id;
   return g;
 }
 let lastRoom='';
@@ -436,7 +445,7 @@ function build3d(){
       const a=Math.max(cu,(op.pos-op.w/2)/100),b=(op.pos+op.w/2)/100,sl=(op.sill||0)/100,top=Math.min(H,sl+op.h/100);
       if(b<=a)continue;
       piece(cu,a,0,H,wc); piece(a,b,top,H,wc); piece(a,b,0,sl,wc);
-      const og=new THREE.Group(),ow=b-a,oh=top-sl,[x,z]=at(k,(a+b)/2); og.position.set(x,sl,z); if(!horiz)og.rotation.y=Math.PI/2; g.add(og);
+      const og=new THREE.Group();og.userData.id=op.id;const ow=b-a,oh=top-sl,[x,z]=at(k,(a+b)/2); og.position.set(x,sl,z); if(!horiz)og.rotation.y=Math.PI/2; g.add(og);
       const fr=op.type==='door'?'#e8e0d6':'#ffffff',f=.05;
       box(og,f,oh,t+.02,fr,-ow/2+f/2,oh/2,0);box(og,f,oh,t+.02,fr,ow/2-f/2,oh/2,0);box(og,ow,f,t+.02,fr,0,oh-f/2,0);
       if(op.type==='window'){box(og,ow,f,t+.04,fr,0,f/2,0);box(og,.03,oh,.04,fr,0,oh/2,0);const gm=box(og,ow-2*f,oh-2*f,.01,'#bfe3f5',0,oh/2,0,glass);gm.castShadow=false}
@@ -447,19 +456,45 @@ function build3d(){
     piece(cu,len,0,H,wc);
   }
   for(const it of S.items) if(!OPEN[it.type]) roomG.add(makeItem(it));
+  roomG.updateMatrixWorld(true);
+  if(selId){let sg=null;roomG.traverse(o=>{if(o.userData.id===selId)sg=o});
+    if(sg){const bh=new THREE.BoxHelper(sg,'#c8775a');bh.material.depthTest=false;bh.renderOrder=9;roomG.add(bh)}}
   const sun=scene.userData.sun,m=Math.max(W,L);const sc=sun.shadow.camera;sc.left=sc.bottom=-m;sc.right=sc.top=m;sc.near=.5;sc.far=30;sc.updateProjectionMatrix();
   const key=S.W+'x'+S.L; if(key!==lastRoom){lastRoom=key;resetCam()}
 }
 function loop(){
   if(!running)return; requestAnimationFrame(loop); ctrl.update();
-  for(const w of walls){w.visible=!(cam.position.dot(w.userData.n)>w.userData.lim)}
+  for(const w of walls){w.visible=S.view3==='full'||!(cam.position.dot(w.userData.n)>w.userData.lim)}
   R.render(scene,cam);
 }
 function setMode(m){
   mode=m; $('t2').classList.toggle('on',m==='2d'); $('t3').classList.toggle('on',m==='3d');
   $('plan').style.display=m==='2d'?'block':'none'; $('view3d').style.display=m==='3d'?'block':'none';
   $('hint').textContent=m==='2d'?'Aşağıdan mobilya ekle • parmağınla sürükle • dokunarak seç':'Tek parmakla çevir • iki parmakla yakınlaştır';
+  $('vtog').style.display=m==='3d'?'block':'none'; vUI();
   if(m==='3d'){ if(!R)init3d(); resize3d(); build3d(); if(!running){running=true;loop()} } else { running=false; draw(); }
+}
+function vUI(){$('vtog').textContent=S.view3==='full'?'👁 Tam görünüm':'👁 Kesit görünüm'}
+$('vtog').onclick=()=>{S.view3=S.view3==='full'?'cut':'full';save();vUI()};
+// 3D tap = select, drag = move
+const rc=new THREE.Raycaster(),fplane=new THREE.Plane(new THREE.Vector3(0,1,0),0);let d3=null;
+function ndc(e){const r=R.domElement.getBoundingClientRect();return new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1)}
+function floorCm(e){rc.setFromCamera(ndc(e),cam);const p=new THREE.Vector3();if(!rc.ray.intersectPlane(fplane,p))return null;return{x:(p.x+S.W/200)*100,y:(p.z+S.L/200)*100}}
+function hitId(e){rc.setFromCamera(ndc(e),cam);const hs=rc.intersectObjects(roomG.children,true);
+  for(const h of hs){let o=h.object;if(!o.visible)continue;let vis=true,q=o;while(q){if(!q.visible)vis=false;q=q.parent}if(!vis)continue;
+    while(o&&!o.userData.id)o=o.parent;if(o)return o.userData.id;if(h.object.type==='Mesh')return null}return null}
+function bind3d(){
+  const el=R.domElement;
+  el.addEventListener('pointerdown',e=>{const id=hitId(e);d3={x:e.clientX,y:e.clientY,id,moved:false};
+    if(id){const it=S.items.find(i=>i.id===id),p=floorCm(e);ctrl.enabled=false;d3.dx=p&&!OPEN[it.type]?p.x-it.x:0;d3.dy=p&&!OPEN[it.type]?p.y-it.y:0;el.setPointerCapture(e.pointerId)}});
+  el.addEventListener('pointermove',e=>{if(!d3||!d3.id)return;if(Math.hypot(e.clientX-d3.x,e.clientY-d3.y)<6&&!d3.moved)return;
+    d3.moved=true;const it=S.items.find(i=>i.id===d3.id),p=floorCm(e);if(!it||!p)return;
+    if(OPEN[it.type])placeOpening(it,p.x,p.y);else{it.x=Math.round((p.x-d3.dx)/5)*5;it.y=Math.round((p.y-d3.dy)/5)*5;clampIt(it)}
+    selId=it.id;build3d()});
+  const up=e=>{if(!d3)return;const moved=Math.hypot(e.clientX-d3.x,e.clientY-d3.y)>=6;
+    if(d3.id){selId=d3.id;save();selUI();build3d()}else if(!moved){selId=null;selUI();build3d()}
+    ctrl.enabled=true;d3=null};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
 }
 $('t2').onclick=()=>setMode('2d'); $('t3').onclick=()=>setMode('3d');
 new ResizeObserver(resize).observe($('stage'));
