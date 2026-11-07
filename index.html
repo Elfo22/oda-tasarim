@@ -688,14 +688,14 @@ function bind3d(){
   el.addEventListener('pointerdown',e=>{
     const hd=hitHandle(e);
     if(hd){const it=cur();d3={x:e.clientX,y:e.clientY,h:hd.handle,side:hd.side,moved:true};ctrl.enabled=false;el.setPointerCapture(e.pointerId);
-      if(it){const [fw,fd]=fp(it);Object.assign(d3,{left:it.x-fw/2,top:it.y-fd/2,start:it.pos-it.w/2,h0:it.h,ph0:it.ph||50})}
+      if(it){const [fw,fd]=fp(it);Object.assign(d3,{left:it.x-fw/2,top:it.y-fd/2,start:it.pos-it.w/2,h0:it.h,ph0:it.ph||50,hp0:handlePos(it),p0:floorCm(e)})}
       const dist=cam.position.distanceTo(ctrl.target);d3.cmpx=200*dist*Math.tan(cam.fov*Math.PI/360)/el.clientHeight;return}
     const id=hitId(e);d3={x:e.clientX,y:e.clientY,id,moved:false};
     if(id){const it=S.items.find(i=>i.id===id),p=floorCm(e);ctrl.enabled=false;d3.dx=p&&!OPEN[it.type]?p.x-it.x:0;d3.dy=p&&!OPEN[it.type]?p.y-it.y:0;el.setPointerCapture(e.pointerId)}});
   el.addEventListener('pointermove',e=>{
     if(d3&&d3.h){const p=floorCm(e),it=cur();
       if(d3.h==='wall'&&p){wallDrag(d3.side,p);roomUI();lastRoom=S.W+'x'+S.L}
-      else if(d3.h==='size'&&it&&p)sizeDrag(it,p,d3);
+      else if(d3.h==='size'&&it&&p&&d3.p0)sizeDrag(it,{x:d3.hp0.x+p.x-d3.p0.x,y:d3.hp0.y+p.y-d3.p0.y},d3);
       else if(d3.h==='height'&&it){it.h=Math.max(1,Math.min(S.H-(it.sill||0),rnd(d3.h0+(d3.y-e.clientY)*d3.cmpx)));if(it.ph&&it.ph>it.h-10)it.ph=Math.max(10,it.h-10)}
       else if(d3.h==='ph'&&it){it.ph=Math.max(10,Math.min(it.h-10,rnd(d3.ph0+(d3.y-e.clientY)*d3.cmpx)))}
       selUI();build3d();return}
