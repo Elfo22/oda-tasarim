@@ -87,6 +87,7 @@ dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
     <label id="lsd">Derinlik<input id="sd" type="number" min="1" max="3000"></label>
     <label id="lsh">Yükseklik<input id="sh" type="number" min="1" max="500"></label>
     <label id="lss">Yerden<input id="ss" type="number" min="0" max="300"></label>
+    <label id="lph">Duvar kısmı<input id="sph" type="range" min="10" max="100" style="width:110px"><span id="sphv"></span></label>
     <label>cm</label>
     <input id="sc" type="color">
     <button class="btn" id="srot">↻ Döndür</button>
@@ -256,7 +257,10 @@ const WN={N:'Üst kenar',S:'Alt kenar',W:'Sol kenar',E:'Sağ kenar'};
 function yUI(){const g=$('wsets');g.innerHTML='';
   for(const k in WN){const r=document.createElement('div');r.className='wrow';r.innerHTML=`<span>${WN[k]}</span>`;
     const s=document.createElement('select');for(const v in WALLK){const o=document.createElement('option');o.value=v;o.textContent=WALLK[v];s.appendChild(o)}
-    s.value=S.walls[k];s.onchange=()=>{S.walls[k]=s.value;changed()};r.appendChild(s);g.appendChild(r)}}
+    s.value=S.walls[k];s.onchange=()=>{S.walls[k]=s.value;changed();yUI()};r.appendChild(s);g.appendChild(r);
+    if(S.walls[k]==='halfglass'){if(!S.wallPH)S.wallPH={};const r2=document.createElement('div');r2.className='wrow';
+      const v=S.wallPH[k]||50;r2.innerHTML=`<span style="font-weight:400;font-size:12px">↳ duvar kısmı</span><input type="range" min="10" max="100" value="${v}" style="flex:1"><b style="font-size:12px;width:44px">${v} cm</b>`;
+      const rg=r2.querySelector('input'),lb=r2.querySelector('b');rg.oninput=()=>{S.wallPH[k]=+rg.value;lb.textContent=rg.value+' cm';changed()};g.appendChild(r2)}}}
 $('yx').onclick=()=>$('ydlg').close();
 $('cx').onclick=()=>$('dlg').close();
 $('ck').onclick=()=>{
@@ -304,6 +308,8 @@ function selUI(){
   $('lsd').style.display=op?'none':'';
   $('lss').style.display=it.type==='window'?'':'none'; $('ss').value=it.sill||0;
   $('lsh').style.display=it.full?'none':'';
+  const hg=it.type==='barrier'&&it.style==='halfglass'; $('lph').style.display=hg?'':'none';
+  if(hg){$('sph').max=Math.max(20,it.h-10);$('sph').value=it.ph||50;$('sphv').textContent=(it.ph||50)+' cm'}
   $('srot').textContent=op?'⇄ Çevir':'↻ Döndür';
   $('sw').value=it.w; $('sd').value=it.d; $('sh').value=it.h; $('sc').value=it.color;
 }
@@ -313,6 +319,7 @@ $('sst').addEventListener('change',()=>{const it=cur();if(!it)return;it.style=$(
 [['sw','w'],['sd','d'],['sh','h'],['ss','sill']].forEach(([id,k])=>$(id).addEventListener('change',()=>{
   const it=cur(); if(!it)return; const v=+$(id).value; if(v>0||(k==='sill'&&v>=0)){it[k]=v; clampIt(it); changed();}
 }));
+$('sph').addEventListener('input',()=>{const it=cur();if(!it)return;it.ph=+$('sph').value;$('sphv').textContent=it.ph+' cm';save();draw();if(mode==='3d')build3d()});
 $('sc').addEventListener('input',()=>{const it=cur(); if(it){it.color=$('sc').value; changed();}});
 $('srot').onclick=()=>{const it=cur(); if(it&&OPEN[it.type]){it.flip=!it.flip;changed();return} if(it){it.rot=(it.rot+90)%360; clampIt(it); changed();}};
 $('sclose').onclick=()=>{selId=null;selUI();draw();if(mode==='3d')build3d()};
@@ -450,6 +457,19 @@ function pick(p){
     if(Math.abs(p.x-it.x)<=fw/2+pad&&Math.abs(p.y-it.y)<=fd/2+pad)return it}
   return null;
 }
+function wallDrag(sd,p){ // returns shift applied on W/N side (cm)
+  const mn=50,mx=3000;let dl=0;
+  if(sd==='E')S.W=Math.min(mx,Math.max(mn,rnd(p.x)));
+  else if(sd==='S')S.L=Math.min(mx,Math.max(mn,rnd(p.y)));
+  else{const d=rnd(sd==='W'?p.x:p.y);const nv=(sd==='W'?S.W:S.L)-d;
+    if(d!==0&&nv>=mn&&nv<=mx){dl=d;
+      if(sd==='W'){S.W=nv;for(const i of S.items){if(OPEN[i.type]){if(i.wall==='N'||i.wall==='S')i.pos-=d}else i.x-=d}}
+      else{S.L=nv;for(const i of S.items){if(OPEN[i.type]){if(i.wall==='W'||i.wall==='E')i.pos-=d}else i.y-=d}}}}
+  S.items.forEach(clampIt); return dl}
+function sizeDrag(it,p,dr){
+  if(OPEN[it.type]){const along=(it.wall==='N'||it.wall==='S')?p.x:p.y;it.w=Math.max(30,rnd(along-dr.start));it.pos=dr.start+it.w/2;clampIt(it);return}
+  const nf=Math.max(5,rnd(p.x-dr.left)),nd=Math.max(1,rnd(p.y-dr.top));
+  if(it.rot%180){it.w=nd;it.d=nf}else{it.w=nf;it.d=nd} it.x=dr.left+nf/2;it.y=dr.top+nd/2;clampIt(it)}
 function wallAt(p){const tol=16/V.s;
   if(p.x>-tol&&p.x<S.W+tol){if(Math.abs(p.y)<tol)return'N';if(Math.abs(p.y-S.L)<tol)return'S'}
   if(p.y>-tol&&p.y<S.L+tol){if(Math.abs(p.x)<tol)return'W';if(Math.abs(p.x-S.W)<tol)return'E'}
@@ -465,21 +485,9 @@ cv.addEventListener('pointerdown',e=>{
 });
 cv.addEventListener('pointermove',e=>{
   if(!drag)return; const p=toCm(e);
-  if(drag.kind==='wall'){
-    const sd=drag.side,mn=50,mx=3000;
-    if(sd==='E')S.W=Math.min(mx,Math.max(mn,rnd(p.x)));
-    else if(sd==='S')S.L=Math.min(mx,Math.max(mn,rnd(p.y)));
-    else{const dl=rnd(sd==='W'?p.x:p.y);const nv=(sd==='W'?S.W:S.L)-dl;
-      if(dl!==0&&nv>=mn&&nv<=mx){
-        if(sd==='W'){S.W=nv;V.ox+=dl*V.s;for(const i of S.items){if(OPEN[i.type]){if(i.wall==='N'||i.wall==='S')i.pos-=dl}else i.x-=dl}}
-        else{S.L=nv;V.oy+=dl*V.s;for(const i of S.items){if(OPEN[i.type]){if(i.wall==='W'||i.wall==='E')i.pos-=dl}else i.y-=dl}}}}
-    S.items.forEach(clampIt); roomUI(); draw(); return}
+  if(drag.kind==='wall'){const dl=wallDrag(drag.side,p);if(drag.side==='W')V.ox+=dl*V.s;if(drag.side==='N')V.oy+=dl*V.s;roomUI();draw();return}
   const it=S.items.find(i=>i.id===drag.id); if(!it)return;
-  if(drag.kind==='size'){
-    if(OPEN[it.type]){const along=(it.wall==='N'||it.wall==='S')?p.x:p.y;it.w=Math.max(30,rnd(along-drag.start));it.pos=drag.start+it.w/2;clampIt(it)}
-    else{const nf=Math.max(5,rnd(p.x-drag.left)),nd=Math.max(1,rnd(p.y-drag.top));
-      if(it.rot%180){it.w=nd;it.d=nf}else{it.w=nf;it.d=nd} it.x=drag.left+nf/2;it.y=drag.top+nd/2;clampIt(it)}
-    selUI();draw();return}
+  if(drag.kind==='size'){sizeDrag(it,p,drag);selUI();draw();return}
   if(OPEN[it.type]){placeOpening(it,p.x,p.y);draw();return}
   it.x=rnd(p.x-drag.dx); it.y=rnd(p.y-drag.dy); clampIt(it); draw();
 });
@@ -515,10 +523,10 @@ function box(g,w,h,d,c,x,y,z,o){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h
 function cyl(g,rt,rb,h,c,x,y,z,o){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,24),mat(c,o));m.position.set(x,y,z);m.castShadow=true;g.add(m);return m}
 function legs(g,w,d,h,c,t=.045){for(const sx of[-1,1])for(const sz of[-1,1])box(g,t,h,t,c,sx*(w/2-t),h/2,sz*(d/2-t))}
 // barrier along local x, centred, from floor up
-function barrier(g,kind,len,th,h){
+function barrier(g,kind,len,th,h,php){
   const wc='#efe7dd';
   if(kind==='full'||kind==='half'){box(g,len,h,th,wc,0,h/2,0);if(kind==='half')box(g,len+.02,.04,th+.04,'#e6e1da',0,h+.02,0);return}
-  if(kind==='halfglass'){const ph=.5,pt=Math.max(th,.12);box(g,len,ph,pt,wc,0,ph/2,0);box(g,len+.02,.04,pt+.04,'#e6e1da',0,ph+.02,0);
+  if(kind==='halfglass'){const ph=Math.min(h-.1,Math.max(.1,php||.5)),pt=Math.max(th,.12);box(g,len,ph,pt,wc,0,ph/2,0);box(g,len+.02,.04,pt+.04,'#e6e1da',0,ph+.02,0);
     box(g,len-.04,h-ph-.06,.02,'#bfe3f5',0,ph+.04+(h-ph-.06)/2,0,GLASS);box(g,len,.04,.05,'#8a8f94',0,h-.02,0,METAL);
     const n=Math.max(1,Math.round(len/1.2));for(let i=0;i<=n;i++)box(g,.03,h-ph,.03,'#8a8f94',-len/2+len*i/n,ph+(h-ph)/2,0,METAL);return}
   if(kind==='glass'){box(g,len-.02,h-.12,.02,'#bfe3f5',0,.06+(h-.12)/2,0,GLASS);box(g,len,.05,.06,'#8a8f94',0,h-.025,0,METAL);
@@ -533,7 +541,7 @@ function barrier(g,kind,len,th,h){
 function makeItem(it){
   const g=new THREE.Group(), w=it.w/100,d=it.d/100,h=Math.max(it.h,1)/100,c=it.color,dk=shade(c,.78);
   switch(it.type){
-    case'barrier':barrier(g,it.style,w,Math.max(d,.02),it.full?S.H/100:h);break;
+    case'barrier':barrier(g,it.style,w,Math.max(d,.02),it.full?S.H/100:h,(it.ph||50)/100);break;
     case'sofa':{const aw=Math.min(.18,w*.14);box(g,w,h*.45,d,c,0,h*.225,0);box(g,w,h,d*.22,dk,0,h/2,-d/2+d*.11);
       for(const s of[-1,1])box(g,aw,h*.65,d,dk,s*(w/2-aw/2),h*.325,0);
       const n=w>1.3?2:1,cw=(w-2*aw)/n;for(let i=0;i<n;i++)box(g,cw-.02,.1,d*.72,shade(c,1.08),-w/2+aw+cw*(i+.5),h*.45+.05,d*.11);break}
@@ -616,7 +624,7 @@ function build3d(){
     const len=SD[k].len, horiz=(k==='N'||k==='S');
     if(kind!=='full'){const th=(kind==='half'||kind==='halfglass')?.15:.04, ext=horiz?2*t:0;
       const bg=new THREE.Group();const [x,z]=at(k,len/2,th/2);bg.position.set(x,0,z);if(!horiz)bg.rotation.y=Math.PI/2;
-      barrier(bg,kind,len+ext,th,(BH[kind]||110)/100);g.add(bg);continue}
+      barrier(bg,kind,len+ext,th,(BH[kind]||110)/100,((S.wallPH||{})[k]||50)/100);g.add(bg);continue}
     const piece=(u0,u1,y0,y1)=>{if(u1-u0<.005||y1-y0<.005)return;const [x,z]=at(k,(u0+u1)/2);box(g,horiz?u1-u0:t,y1-y0,horiz?t:u1-u0,wc,x,(y0+y1)/2,z)};
     if(horiz){piece(-t,0,0,H);piece(len,len+t,0,H)}
     const ops=S.items.filter(i=>OPEN[i.type]&&i.wall===k).sort((a,b)=>a.pos-b.pos);
@@ -634,8 +642,22 @@ function build3d(){
   roomG.updateMatrixWorld(true);
   if(selId){let sg=null;roomG.traverse(o=>{if(o.userData.id===selId)sg=o});
     if(sg){const bh=new THREE.BoxHelper(sg,'#c8775a');bh.material.depthTest=false;bh.renderOrder=9;roomG.add(bh)}}
+  // drag handles (orange balls)
+  const knob=(x,y,z,h,extra={},col='#c8775a')=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.075,16,12),new THREE.MeshBasicMaterial({color:col,depthTest:false}));
+    m.position.set(x,y,z);m.renderOrder=10;m.userData={handle:h,...extra};roomG.add(m)};
+  const P=(cx,cy)=>[cx/100-W/2,cy/100-L/2];
+  const sit=cur();
+  if(sit){
+    if(OPEN[sit.type]){if(S.walls[sit.wall]==='full'){const hp=handlePos(sit),[x,z]=P(hp.x,hp.y);const sl=(sit.sill||0)/100;
+        knob(x,sl+.15,z,'size');const [cx,cz]=P(sit.x,sit.y);knob(cx,sl+sit.h/100,cz,'height',{},'#e0a33c')}}
+    else{const hp=handlePos(sit),[x,z]=P(hp.x,hp.y);knob(x,.05,z,'size');const [cx,cz]=P(sit.x,sit.y);
+      if(!sit.full&&sit.type!=='rug'&&sit.type!=='beam')knob(cx,sit.h/100,cz,'height',{},'#e0a33c');
+      if(sit.type==='barrier'&&sit.style==='halfglass'){const a=-sit.rot*Math.PI/180,off=Math.min(.4,sit.w/250);knob(cx+Math.cos(a)*off,(sit.ph||50)/100,cz-Math.sin(a)*off,'ph',{},'#5fa8d3')}}
+  } else {
+    knob(0,.05,-L/2-.15,'wall',{side:'N'});knob(0,.05,L/2+.15,'wall',{side:'S'});knob(-W/2-.15,.05,0,'wall',{side:'W'});knob(W/2+.15,.05,0,'wall',{side:'E'});
+  }
   const sun=scene.userData.sun,m=Math.max(W,L)+1;const sc=sun.shadow.camera;sc.left=sc.bottom=-m;sc.right=sc.top=m;sc.near=.5;sc.far=30;sc.updateProjectionMatrix();
-  const key=S.W+'x'+S.L; if(key!==lastRoom){lastRoom=key;resetCam()}
+  const key=S.W+'x'+S.L; if(key!==lastRoom&&!(d3&&d3.h)){lastRoom=key;resetCam()}
 }
 function loop(){
   if(!running)return; requestAnimationFrame(loop); ctrl.update();
@@ -646,7 +668,7 @@ const HINT2='Dokun: seç • sürükle: taşı • turuncu nokta: boyut / duvar 
 function setMode(m){
   mode=m; $('t2').classList.toggle('on',m==='2d'); $('t3').classList.toggle('on',m==='3d');
   $('plan').style.display=m==='2d'?'block':'none'; $('view3d').style.display=m==='3d'?'block':'none';
-  $('hint').textContent=m==='2d'?HINT2:'Boşlukta kaydır: çevir • iki parmak: yakınlaştır • eşyayı sürükle: taşı';
+  $('hint').textContent=m==='2d'?HINT2:'Boşluk: çevir • eşya: sürükle/taşı • turuncu top: boyut • sarı top: yükseklik';
   $('vtog').style.display=m==='3d'?'block':'none'; $('snap').style.display=m==='2d'?'block':'none'; vUI();
   if(m==='3d'){ if(!R)init3d(); resize3d(); build3d(); if(!running){running=true;loop()} } else { running=false; draw(); }
 }
@@ -656,19 +678,32 @@ $('vtog').onclick=()=>{S.view3=S.view3==='full'?'cut':'full';save();vUI()};
 const rc=new THREE.Raycaster(),fplane=new THREE.Plane(new THREE.Vector3(0,1,0),0);let d3=null;
 function ndc(e){const r=R.domElement.getBoundingClientRect();return new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1)}
 function floorCm(e){rc.setFromCamera(ndc(e),cam);const p=new THREE.Vector3();if(!rc.ray.intersectPlane(fplane,p))return null;return{x:(p.x+S.W/200)*100,y:(p.z+S.L/200)*100}}
+function hitHandle(e){rc.setFromCamera(ndc(e),cam);const hs=rc.intersectObjects(roomG.children.filter(o=>o.userData&&o.userData.handle),false);return hs.length?hs[0].object.userData:null}
 function hitId(e){rc.setFromCamera(ndc(e),cam);const hs=rc.intersectObjects(roomG.children,true);
   for(const h of hs){let o=h.object;let vis=true,q=o;while(q){if(!q.visible)vis=false;q=q.parent}if(!vis)continue;
     if(o.type!=='Mesh')continue;
     while(o&&!o.userData.id)o=o.parent;if(o)return o.userData.id;return null}return null}
 function bind3d(){
   const el=R.domElement;
-  el.addEventListener('pointerdown',e=>{const id=hitId(e);d3={x:e.clientX,y:e.clientY,id,moved:false};
+  el.addEventListener('pointerdown',e=>{
+    const hd=hitHandle(e);
+    if(hd){const it=cur();d3={x:e.clientX,y:e.clientY,h:hd.handle,side:hd.side,moved:true};ctrl.enabled=false;el.setPointerCapture(e.pointerId);
+      if(it){const [fw,fd]=fp(it);Object.assign(d3,{left:it.x-fw/2,top:it.y-fd/2,start:it.pos-it.w/2,h0:it.h,ph0:it.ph||50})}
+      const dist=cam.position.distanceTo(ctrl.target);d3.cmpx=200*dist*Math.tan(cam.fov*Math.PI/360)/el.clientHeight;return}
+    const id=hitId(e);d3={x:e.clientX,y:e.clientY,id,moved:false};
     if(id){const it=S.items.find(i=>i.id===id),p=floorCm(e);ctrl.enabled=false;d3.dx=p&&!OPEN[it.type]?p.x-it.x:0;d3.dy=p&&!OPEN[it.type]?p.y-it.y:0;el.setPointerCapture(e.pointerId)}});
-  el.addEventListener('pointermove',e=>{if(!d3||!d3.id)return;if(Math.hypot(e.clientX-d3.x,e.clientY-d3.y)<6&&!d3.moved)return;
+  el.addEventListener('pointermove',e=>{
+    if(d3&&d3.h){const p=floorCm(e),it=cur();
+      if(d3.h==='wall'&&p){wallDrag(d3.side,p);roomUI();lastRoom=S.W+'x'+S.L}
+      else if(d3.h==='size'&&it&&p)sizeDrag(it,p,d3);
+      else if(d3.h==='height'&&it){it.h=Math.max(1,Math.min(S.H-(it.sill||0),rnd(d3.h0+(d3.y-e.clientY)*d3.cmpx)));if(it.ph&&it.ph>it.h-10)it.ph=Math.max(10,it.h-10)}
+      else if(d3.h==='ph'&&it){it.ph=Math.max(10,Math.min(it.h-10,rnd(d3.ph0+(d3.y-e.clientY)*d3.cmpx)))}
+      selUI();build3d();return}
+    if(!d3||!d3.id)return;if(Math.hypot(e.clientX-d3.x,e.clientY-d3.y)<6&&!d3.moved)return;
     d3.moved=true;const it=S.items.find(i=>i.id===d3.id),p=floorCm(e);if(!it||!p)return;
     if(OPEN[it.type])placeOpening(it,p.x,p.y);else{it.x=rnd(p.x-d3.dx);it.y=rnd(p.y-d3.dy);clampIt(it)}
     selId=it.id;build3d()});
-  const up=e=>{if(!d3)return;const moved=Math.hypot(e.clientX-d3.x,e.clientY-d3.y)>=6;
+  const up=e=>{if(!d3)return;if(d3.h){d3=null;ctrl.enabled=true;changed();return}const moved=Math.hypot(e.clientX-d3.x,e.clientY-d3.y)>=6;
     if(d3.id){selId=d3.id;save();selUI();build3d()}else if(!moved){selId=null;selUI();build3d()}
     ctrl.enabled=true;d3=null};
   el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
