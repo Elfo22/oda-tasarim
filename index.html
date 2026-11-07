@@ -468,7 +468,8 @@ function wallDrag(sd,p){ // returns shift applied on W/N side (cm)
   S.items.forEach(clampIt); return dl}
 function sizeDrag(it,p,dr){
   if(OPEN[it.type]){const along=(it.wall==='N'||it.wall==='S')?p.x:p.y;it.w=Math.max(30,rnd(along-dr.start));it.pos=dr.start+it.w/2;clampIt(it);return}
-  const nf=Math.max(5,rnd(p.x-dr.left)),nd=Math.max(1,rnd(p.y-dr.top));
+  let nf=Math.max(5,rnd(p.x-dr.left)),nd=Math.max(1,rnd(p.y-dr.top));
+  if(it.type==='barrier'){const [f0,d0]=fp(it);if(it.rot%180)nf=f0;else nd=d0}
   if(it.rot%180){it.w=nd;it.d=nf}else{it.w=nf;it.d=nd} it.x=dr.left+nf/2;it.y=dr.top+nd/2;clampIt(it)}
 function wallAt(p){const tol=16/V.s;
   if(p.x>-tol&&p.x<S.W+tol){if(Math.abs(p.y)<tol)return'N';if(Math.abs(p.y-S.L)<tol)return'S'}
