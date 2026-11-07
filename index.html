@@ -24,37 +24,43 @@ h1 span{color:var(--accent)}
 #plan,#view3d{position:absolute;inset:0;width:100%;height:100%}
 #view3d{display:none}
 .hint{position:absolute;left:10px;bottom:8px;font-size:11px;color:var(--muted);pointer-events:none;background:#fffd;padding:3px 7px;border-radius:8px}
+.float{position:absolute;top:8px;z-index:4;box-shadow:0 1px 4px #0002;background:#fff;font-size:12px;padding:6px 9px}
+#vtog{right:8px;display:none}
+#snap{left:8px}
+#snap.off{background:#f3d4cf;color:#a33}
 #sel{display:none;position:absolute;left:8px;right:8px;bottom:8px;z-index:5;background:#fff;border-radius:14px;padding:8px 10px;box-shadow:0 4px 18px #0003;gap:6px;align-items:center;flex-wrap:wrap}
 #sel.on{display:flex}
+#sel.on~.hint{display:none}
 #sel b{font-size:14px;flex:1}
 #sel .x{border:0;background:#f1ebe5;border-radius:50%;width:28px;height:28px;font-size:13px}
-#sel .row2{width:100%;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.vt{position:absolute;top:8px;right:8px;z-index:4;display:none;box-shadow:0 1px 4px #0002;background:#fff}
-#sel.on~.hint{display:none}
 #sel label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px}
 #sel input[type=number]{width:56px;padding:5px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+#sel select{padding:5px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff}
 #sel input[type=color]{width:32px;height:30px;border:0;padding:0;background:none}
 .btn{border:0;background:var(--accent2);color:var(--ink);padding:7px 10px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
 .btn.red{background:#f3d4cf;color:#a33}
 .btn.main{background:var(--accent);color:#fff}
-.palette{display:flex;gap:8px;overflow-x:auto;padding:10px;scrollbar-width:none}
+.cats{display:flex;gap:6px;padding:8px 10px 0;overflow-x:auto;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cats button{flex:0 0 auto;border:0;background:#fff;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;box-shadow:0 1px 3px #0001}
+.cats button.on{background:var(--accent);color:#fff}
+.palette{display:flex;gap:8px;overflow-x:auto;padding:8px 10px 10px;scrollbar-width:none}
 .palette::-webkit-scrollbar{display:none}
-.palette button{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:14px;padding:7px 9px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:72px;color:var(--ink);cursor:pointer}
+.palette button{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:14px;padding:7px 9px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:74px;max-width:96px;color:var(--ink);cursor:pointer;text-align:center}
 .palette button i{font-style:normal;font-size:22px}
-.palette .sep{flex:0 0 1px;background:var(--line);margin:4px 2px}
 .palette button small{color:var(--muted);font-size:10px}
-dialog{border:0;border-radius:16px;padding:16px;width:min(320px,90vw)}
+.palette button.hl{background:var(--accent2)}
+dialog{border:0;border-radius:16px;padding:16px;width:min(340px,92vw)}
 dialog h3{margin:0 0 6px}
 dialog .lbl{font-size:12px;color:var(--muted);margin:12px 0 6px;font-weight:600}
-.wgrid,.ygrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.wgrid button,.ygrid button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 6px;font-size:13px;color:var(--ink);cursor:pointer}
-.wgrid button.off{background:#f3d4cf;color:#a33;text-decoration:line-through}
-.ygrid button small{display:block;color:var(--muted);font-size:10px}
 dialog label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
 dialog input{width:100%;padding:8px;border:1px solid var(--line);border-radius:10px;font-size:15px}
 dialog .row{display:flex;gap:8px}
 dialog .row>div{flex:1}
 dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.wrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.wrow span{flex:0 0 78px;font-size:13px;font-weight:600}
+.wrow select{flex:1;padding:8px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fff}
 </style>
 </head>
 <body>
@@ -64,29 +70,32 @@ dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 </header>
 <div class="room">
   <label>Tür<select id="rk"><option value="room">Oda</option><option value="balcony">Balkon</option></select></label>
-  <label>En (m)<input id="rw" type="number" step="0.1" min="1" max="20"></label>
-  <label>Boy (m)<input id="rl" type="number" step="0.1" min="1" max="20"></label>
+  <label>En (m)<input id="rw" type="number" step="0.1" min="1" max="30"></label>
+  <label>Boy (m)<input id="rl" type="number" step="0.1" min="1" max="30"></label>
   <label>Tavan (m)<input id="rh" type="number" step="0.1" min="2" max="5"></label>
   <button class="btn red" id="clear" style="margin-left:auto">Temizle</button>
 </div>
 <div id="stage">
   <canvas id="plan"></canvas>
   <div id="view3d"></div>
-  <button class="btn vt" id="vtog">👁 Kesit görünüm</button>
+  <button class="btn float" id="snap">🧲 Sınır: Açık</button>
+  <button class="btn float" id="vtog">👁 Kesit görünüm</button>
   <div id="sel">
-  <b id="sname"></b><button class="x" id="sclose">✕</button>
-  <label>En<input id="sw" type="number" min="5" max="2000"></label>
-  <label id="lsd">Derinlik<input id="sd" type="number" min="5" max="2000"></label>
-  <label>Yükseklik<input id="sh" type="number" min="1" max="500"></label>
-  <label id="lss">Yerden<input id="ss" type="number" min="0" max="300"></label>
-  <label>cm</label>
-  <input id="sc" type="color">
-  <button class="btn" id="srot">↻ Döndür</button>
-  <button class="btn" id="scopy">⧉ Kopyala</button>
-  <button class="btn red" id="sdel">🗑 Sil</button>
+    <b id="sname"></b><button class="x" id="sclose">✕</button>
+    <label id="lst">Model<select id="sst"></select></label>
+    <label>En<input id="sw" type="number" min="5" max="3000"></label>
+    <label id="lsd">Derinlik<input id="sd" type="number" min="1" max="3000"></label>
+    <label id="lsh">Yükseklik<input id="sh" type="number" min="1" max="500"></label>
+    <label id="lss">Yerden<input id="ss" type="number" min="0" max="300"></label>
+    <label>cm</label>
+    <input id="sc" type="color">
+    <button class="btn" id="srot">↻ Döndür</button>
+    <button class="btn" id="scopy">⧉ Kopyala</button>
+    <button class="btn red" id="sdel">🗑 Sil</button>
+  </div>
+  <div class="hint" id="hint"></div>
 </div>
-  <div class="hint" id="hint">Aşağıdan mobilya ekle • parmağınla sürükle • dokunarak seç</div>
-</div>
+<div class="cats" id="cats"></div>
 <div class="palette" id="pal"></div>
 
 <dialog id="dlg">
@@ -102,11 +111,10 @@ dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 </dialog>
 
 <dialog id="ydlg">
-  <h3>🧱 Yapı ve teknik</h3>
-  <div class="lbl">Duvarlar · dokununca kaldırılır / geri gelir</div>
-  <div class="wgrid" id="wtog"></div>
-  <div class="lbl">Eklenecek yapı elemanı</div>
-  <div class="ygrid" id="ylist"></div>
+  <h3>🧱 Duvar ayarları</h3>
+  <div class="lbl">Odanın 4 kenarı ne olsun?</div>
+  <div id="wsets"></div>
+  <div class="lbl" style="font-weight:400">İpucu: kenarlardaki turuncu noktayı planda sürükleyerek odayı büyütüp küçültebilirsin.</div>
   <div class="acts"><button class="btn main" id="yx">Tamam</button></div>
 </dialog>
 
@@ -117,55 +125,102 @@ dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
-const CAT=[
- {type:'door',name:'Kapı',icon:'🚪',w:90,d:10,h:210,sill:0,color:'#a77b56'},
- {type:'window',name:'Pencere',icon:'🪟',w:120,d:10,h:130,sill:90,color:'#ffffff'},
- {type:'bdoor',name:'Balkon Kapısı',icon:'🔲',w:90,d:10,h:220,sill:0,color:'#ffffff'},
- {sep:1},
- {type:'sofa',name:'Kanepe',icon:'🛋️',w:210,d:90,h:85,color:'#8a9a8b'},
- {type:'sofa',name:'Berjer',icon:'💺',w:85,d:85,h:85,color:'#c8a27a'},
- {type:'bed',name:'Çift Yatak',icon:'🛏️',w:160,d:200,h:100,color:'#e8e1d8'},
- {type:'bed',name:'Tek Yatak',icon:'🛏️',w:90,d:200,h:90,color:'#dfe6ee'},
- {type:'table',name:'Yemek Masası',icon:'🍽️',w:160,d:90,h:75,color:'#b08560'},
- {type:'table',name:'Sehpa',icon:'☕',w:100,d:60,h:40,color:'#a07850'},
- {type:'chair',name:'Sandalye',icon:'🪑',w:45,d:50,h:90,color:'#7d6650'},
- {type:'table',name:'Çalışma Masası',icon:'💻',w:120,d:60,h:75,color:'#d9c7b0'},
- {type:'cabinet',name:'Gardırop',icon:'🗄️',w:180,d:60,h:220,color:'#efe9e1'},
- {type:'tv',name:'TV Ünitesi',icon:'📺',w:180,d:45,h:50,color:'#5b5550'},
- {type:'shelf',name:'Kitaplık',icon:'📚',w:80,d:35,h:180,color:'#c9a77c'},
- {type:'rug',name:'Halı',icon:'🟫',w:200,d:300,h:1,color:'#d8b4a0'},
- {type:'plant',name:'Bitki',icon:'🪴',w:45,d:45,h:120,color:'#6f9a63'},
- {type:'lamp',name:'Lambader',icon:'💡',w:40,d:40,h:160,color:'#f0d9a0'},
- {type:'rtable',name:'Balkon Masası',icon:'⚪',w:70,d:70,h:72,color:'#3f4a45'},
- {type:'lounger',name:'Şezlong',icon:'🏖️',w:65,d:190,h:80,color:'#e6d3b3'},
-];
-const STRUCT=[
- {type:'column',name:'Kolon',icon:'⬛',w:30,d:30,h:260,full:1,color:'#e2d9ce'},
- {type:'shaft',name:'Baca / Şaft',icon:'🧱',w:60,d:40,h:260,full:1,color:'#d9cfc3'},
- {type:'ledge',name:'Duvar Çıkıntısı',icon:'▬',w:100,d:20,h:260,full:1,color:'#e2d9ce'},
- {type:'sillbox',name:'Pencere Altı Dolgu',icon:'🪟',w:120,d:30,h:90,color:'#e2d9ce'},
- {type:'radiator',name:'Kalorifer Peteği',icon:'♨️',w:100,d:10,h:60,color:'#f4f4f2'},
- {type:'beam',name:'Kiriş (tavanda)',icon:'═',w:300,d:25,h:40,color:'#e2d9ce'},
-];
+// ---------- catalog ----------
+const STYLES={
+  door:{ic:'İç Kapı',dis:'Dış (Çelik) Kapı'},
+  bdoor:{balkon:'Balkon Kapısı',surgu:'Sürgülü Cam Kapı'},
+  window:{tek:'Tek Kanat Pencere',iki:'İki Kanatlı Pencere',uc:'Üç Kanatlı Pencere',vasistas:'Vasistas (banyo)',surme:'Sürme Pencere',sabit:'Sabit Cam',boy:'Boy (Fransız) Pencere'},
+  barrier:{full:'Duvar Parçası',half:'Yarım Duvar',glass:'Cam Korkuluk',iron:'Ferforje (Demir) Korkuluk',inox:'Paslanmaz Korkuluk',halfglass:'Yarım Duvar + Cam'}
+};
+const WALLK={full:'Tam duvar',half:'Yarım duvar',glass:'Cam korkuluk',iron:'Ferforje (demir) korkuluk',inox:'Paslanmaz boru korkuluk',halfglass:'Yarım duvar + cam',none:'Yok (açık)'};
+const BH={half:100,glass:110,iron:110,inox:110,halfglass:110};
+const CATS={
+ kp:{name:'🚪 Kapı & Pencere',items:[
+  {type:'door',style:'ic',name:'İç Kapı',icon:'🚪',w:85,d:10,h:210,sill:0,color:'#c9a27a'},
+  {type:'door',style:'dis',name:'Dış (Çelik) Kapı',icon:'🛡️',w:100,d:10,h:210,sill:0,color:'#3b3b3b'},
+  {type:'bdoor',style:'balkon',name:'Balkon Kapısı',icon:'🔲',w:80,d:10,h:220,sill:0,color:'#ffffff'},
+  {type:'bdoor',style:'surgu',name:'Sürgülü Cam Kapı',icon:'↔️',w:180,d:10,h:220,sill:0,color:'#ffffff'},
+  {sep:1},
+  {type:'window',style:'tek',name:'Tek Kanat Pencere',icon:'🪟',w:70,d:10,h:140,sill:90,color:'#ffffff'},
+  {type:'window',style:'iki',name:'İki Kanatlı Pencere',icon:'🪟',w:130,d:10,h:140,sill:90,color:'#ffffff'},
+  {type:'window',style:'uc',name:'Üç Kanatlı Pencere',icon:'🪟',w:190,d:10,h:140,sill:90,color:'#ffffff'},
+  {type:'window',style:'surme',name:'Sürme Pencere',icon:'↔️',w:150,d:10,h:130,sill:90,color:'#ffffff'},
+  {type:'window',style:'vasistas',name:'Vasistas (banyo)',icon:'🔼',w:60,d:10,h:50,sill:160,color:'#ffffff'},
+  {type:'window',style:'sabit',name:'Sabit Cam',icon:'⬜',w:100,d:10,h:120,sill:90,color:'#ffffff'},
+  {type:'window',style:'boy',name:'Boy (Fransız) Pencere',icon:'🚪',w:100,d:10,h:220,sill:5,color:'#ffffff'},
+ ]},
+ mob:{name:'🛋️ Mobilya',items:[
+  {type:'sofa',name:'Kanepe',icon:'🛋️',w:210,d:90,h:85,color:'#8a9a8b'},
+  {type:'sofa',name:'Berjer',icon:'💺',w:85,d:85,h:85,color:'#c8a27a'},
+  {type:'bed',name:'Çift Yatak',icon:'🛏️',w:160,d:200,h:100,color:'#e8e1d8'},
+  {type:'bed',name:'Tek Yatak',icon:'🛏️',w:90,d:200,h:90,color:'#dfe6ee'},
+  {type:'table',name:'Yemek Masası',icon:'🍽️',w:160,d:90,h:75,color:'#b08560'},
+  {type:'table',name:'Sehpa',icon:'☕',w:100,d:60,h:40,color:'#a07850'},
+  {type:'chair',name:'Sandalye',icon:'🪑',w:45,d:50,h:90,color:'#7d6650'},
+  {type:'table',name:'Çalışma Masası',icon:'💻',w:120,d:60,h:75,color:'#d9c7b0'},
+  {type:'cabinet',name:'Gardırop',icon:'🗄️',w:180,d:60,h:220,color:'#efe9e1'},
+  {type:'tv',name:'TV Ünitesi',icon:'📺',w:180,d:45,h:50,color:'#5b5550'},
+  {type:'shelf',name:'Kitaplık',icon:'📚',w:80,d:35,h:180,color:'#c9a77c'},
+  {type:'rug',name:'Halı',icon:'🟫',w:200,d:300,h:1,color:'#d8b4a0'},
+  {type:'plant',name:'Bitki',icon:'🪴',w:45,d:45,h:120,color:'#6f9a63'},
+  {type:'lamp',name:'Lambader',icon:'💡',w:40,d:40,h:160,color:'#f0d9a0'},
+  {custom:1},
+ ]},
+ bal:{name:'🌿 Balkon',items:[
+  {type:'barrier',style:'glass',name:'Cam Korkuluk',icon:'🧊',w:150,d:4,h:110,color:'#bfe3f5'},
+  {type:'barrier',style:'iron',name:'Ferforje (Demir) Korkuluk',icon:'⛓️',w:150,d:4,h:110,color:'#2b2b2b'},
+  {type:'barrier',style:'inox',name:'Paslanmaz Korkuluk',icon:'➖',w:150,d:4,h:110,color:'#c3c7cb'},
+  {type:'barrier',style:'half',name:'Yarım Duvar',icon:'🧱',w:150,d:15,h:100,color:'#efe7dd'},
+  {type:'barrier',style:'halfglass',name:'Yarım Duvar + Cam',icon:'🧱',w:150,d:15,h:110,color:'#efe7dd'},
+  {sep:1},
+  {type:'rtable',name:'Balkon Masası',icon:'⚪',w:70,d:70,h:72,color:'#3f4a45'},
+  {type:'chair',name:'Sandalye',icon:'🪑',w:45,d:50,h:90,color:'#3f4a45'},
+  {type:'lounger',name:'Şezlong',icon:'🏖️',w:65,d:190,h:80,color:'#e6d3b3'},
+  {type:'plant',name:'Bitki',icon:'🪴',w:45,d:45,h:120,color:'#6f9a63'},
+ ]},
+ yapi:{name:'🧱 Yapı',items:[
+  {walls:1},
+  {type:'barrier',style:'full',name:'Duvar Parçası',icon:'🧱',w:200,d:10,h:260,full:1,color:'#efe7dd'},
+  {type:'barrier',style:'half',name:'Yarım Duvar',icon:'🧱',w:150,d:15,h:100,color:'#efe7dd'},
+  {type:'column',name:'Kolon',icon:'⬛',w:30,d:30,h:260,full:1,color:'#e2d9ce'},
+  {type:'shaft',name:'Baca / Şaft',icon:'🧱',w:60,d:40,h:260,full:1,color:'#d9cfc3'},
+  {type:'ledge',name:'Duvar Çıkıntısı',icon:'▬',w:100,d:20,h:260,full:1,color:'#e2d9ce'},
+  {type:'sillbox',name:'Pencere Altı Dolgu',icon:'🪟',w:120,d:30,h:90,color:'#e2d9ce'},
+  {type:'radiator',name:'Kalorifer Peteği',icon:'♨️',w:100,d:10,h:60,color:'#f4f4f2'},
+  {type:'beam',name:'Kiriş (tavanda)',icon:'═',w:300,d:25,h:40,color:'#e2d9ce'},
+ ]},
+};
 const STR={column:1,shaft:1,ledge:1,sillbox:1,radiator:1,beam:1};
 const BACKED={sofa:1,bed:1,chair:1,cabinet:1,tv:1,shelf:1,lounger:1};
 const OPEN={door:1,window:1,bdoor:1};
+const RAILS={glass:1,iron:1,inox:1,halfglass:1};
 const $=id=>document.getElementById(id);
 
+// ---------- state ----------
 let S=null;
 try{S=JSON.parse(localStorage.getItem('odam-v1'))}catch(e){}
 if(!S||!S.items)S={W:400,L:350,H:260,items:[]};
 if(!S.kind)S.kind='room';
-if(!S.noWall)S.noWall={};
 if(!S.view3)S.view3='cut';
-let selId=null, drag=null, mode='2d';
+if(S.snap===undefined)S.snap=true;
+if(!S.walls){S.walls={};for(const k of['N','S','W','E'])S.walls[k]=(S.noWall&&S.noWall[k])?'none':(S.kind==='balcony'&&k!=='N')?'glass':'full';delete S.noWall}
+for(const it of S.items){ // older saves
+  if(it.type==='door'&&!it.style)it.style='ic';
+  if(it.type==='bdoor'&&!it.style)it.style='balkon';
+  if(it.type==='window'&&!it.style)it.style='iki';
+}
+let selId=null, drag=null, mode='2d', cat='kp';
 const save=()=>localStorage.setItem('odam-v1',JSON.stringify(S));
 const cur=()=>S.items.find(i=>i.id===selId);
+const step=()=>S.snap?5:1;
+const rnd=v=>Math.round(v/step())*step();
 const fp=it=>OPEN[it.type]?((it.wall==='N'||it.wall==='S')?[it.w,24]:[24,it.w]):((it.rot%180)?[it.d,it.w]:[it.w,it.d]);
 const sideLen=w=>(w==='N'||w==='S')?S.W:S.L;
 function placeOpening(it,px,py){
-  if(px!==undefined){const ds={N:py,S:S.L-py,W:px,E:S.W-px};it.wall=Object.keys(ds).reduce((a,b)=>ds[a]<=ds[b]?a:b);
-    it.pos=Math.round(((it.wall==='N'||it.wall==='S')?px:py)/5)*5;}
+  if(px!==undefined){const ds={N:py,S:S.L-py,W:px,E:S.W-px};
+    const ok=Object.keys(ds).filter(k=>S.walls[k]==='full'); const ks=ok.length?ok:Object.keys(ds);
+    it.wall=ks.reduce((a,b)=>ds[a]<=ds[b]?a:b);
+    it.pos=rnd((it.wall==='N'||it.wall==='S')?px:py);}
   if(!it.wall)it.wall='N';
   const len=sideLen(it.wall); it.w=Math.min(it.w,len); if(it.pos==null)it.pos=len/2;
   it.pos=Math.min(Math.max(it.pos,it.w/2),len-it.w/2);
@@ -174,42 +229,47 @@ function placeOpening(it,px,py){
 function clampIt(it){
   if(it.full)it.h=S.H;
   if(OPEN[it.type]){it.h=Math.min(it.h,S.H-(it.sill||0));placeOpening(it);return}
+  if(!S.snap)return;
   const [fw,fd]=fp(it);
   it.x=fw>=S.W?S.W/2:Math.min(Math.max(it.x,fw/2),S.W-fw/2);
   it.y=fd>=S.L?S.L/2:Math.min(Math.max(it.y,fd/2),S.L-fd/2);
 }
 
 // ---------- palette ----------
-const pal=$('pal');
-const yb=document.createElement('button');
-yb.innerHTML='<i>🧱</i>Yapı<small>duvar, kolon…</small>';yb.onclick=()=>{yUI();$('ydlg').showModal()};pal.appendChild(yb);
-CAT.forEach(c=>{
-  if(c.sep){const d=document.createElement('div');d.className='sep';pal.appendChild(d);return}
-  const b=document.createElement('button');
-  b.innerHTML=`<i>${c.icon}</i>${c.name}<small>${OPEN[c.type]?c.w+'×'+c.h:c.w+'×'+c.d}</small>`;
-  b.onclick=()=>addItem({...c});
-  pal.appendChild(b);
-});
-const cb=document.createElement('button');
-cb.innerHTML='<i>➕</i>Özel<small>ölçü gir</small>';
-cb.onclick=()=>$('dlg').showModal();
-pal.appendChild(cb);
-const WN={N:'Üst duvar',S:'Alt duvar',W:'Sol duvar',E:'Sağ duvar'};
-function yUI(){const g=$('wtog');g.innerHTML='';for(const k in WN){const b=document.createElement('button');b.textContent=(S.noWall[k]?'➕ ':'🧱 ')+WN[k];b.className=S.noWall[k]?'off':'';
-  b.onclick=()=>{S.noWall[k]=!S.noWall[k];yUI();changed()};g.appendChild(b)}}
-STRUCT.forEach(c=>{const b=document.createElement('button');b.innerHTML=`${c.icon} ${c.name}<small>${c.w}×${c.d}${c.full?' · tavana kadar':' · '+c.h+' cm'}</small>`;
-  b.onclick=()=>{$('ydlg').close();addItem({...c})};$('ylist').appendChild(b)});
+function catsUI(){
+  const c=$('cats'); c.innerHTML='';
+  for(const k in CATS){const b=document.createElement('button');b.textContent=CATS[k].name;b.className=k===cat?'on':'';b.onclick=()=>{cat=k;catsUI();palUI()};c.appendChild(b)}
+}
+function palUI(){
+  const pal=$('pal'); pal.innerHTML=''; pal.scrollLeft=0;
+  for(const c of CATS[cat].items){
+    if(c.sep){const d=document.createElement('div');d.style.cssText='flex:0 0 1px;background:var(--line);margin:4px 2px';pal.appendChild(d);continue}
+    const b=document.createElement('button');
+    if(c.custom){b.innerHTML='<i>➕</i>Özel<small>ölçü gir</small>';b.onclick=()=>$('dlg').showModal()}
+    else if(c.walls){b.className='hl';b.innerHTML='<i>⚙️</i>Duvar ayarları<small>tam, yarım, korkuluk</small>';b.onclick=()=>{yUI();$('ydlg').showModal()}}
+    else{b.innerHTML=`<i>${c.icon}</i>${c.name}<small>${OPEN[c.type]||c.type==='barrier'?c.w+'×'+c.h:c.w+'×'+c.d}</small>`;b.onclick=()=>addItem({...c})}
+    pal.appendChild(b);
+  }
+}
+catsUI(); palUI();
+const WN={N:'Üst kenar',S:'Alt kenar',W:'Sol kenar',E:'Sağ kenar'};
+function yUI(){const g=$('wsets');g.innerHTML='';
+  for(const k in WN){const r=document.createElement('div');r.className='wrow';r.innerHTML=`<span>${WN[k]}</span>`;
+    const s=document.createElement('select');for(const v in WALLK){const o=document.createElement('option');o.value=v;o.textContent=WALLK[v];s.appendChild(o)}
+    s.value=S.walls[k];s.onchange=()=>{S.walls[k]=s.value;changed()};r.appendChild(s);g.appendChild(r)}}
 $('yx').onclick=()=>$('ydlg').close();
 $('cx').onclick=()=>$('dlg').close();
 $('ck').onclick=()=>{
-  addItem({type:'box',name:$('cn').value||'Mobilya',icon:'📦',w:+$('cw').value||50,d:+$('cd').value||50,h:+$('ch').value||50,color:$('cc').value});
+  addItem({type:'box',name:$('cn').value||'Mobilya',w:+$('cw').value||50,d:+$('cd').value||50,h:+$('ch').value||50,color:$('cc').value});
   $('dlg').close();
 };
 
 function addItem(c){
   const it={id:Math.random().toString(36).slice(2,9),type:c.type,name:c.name,w:c.w,d:c.d,h:c.h,color:c.color,rot:c.rot||0,x:S.W/2,y:S.L/2};
-  if(c.full)it.full=1;
-  if(OPEN[c.type]){it.sill=c.sill||0;it.flip=!!c.flip;it.wall=c.wall||'N';const len=sideLen(it.wall);let pos=c.pos!=null?c.pos+c.w+15:len/2;
+  if(c.full)it.full=1; if(c.style)it.style=c.style;
+  if(OPEN[c.type]){it.sill=c.sill||0;it.flip=!!c.flip;
+    it.wall=c.wall&&S.walls[c.wall]==='full'?c.wall:(['N','S','W','E'].find(k=>S.walls[k]==='full')||'N');
+    const len=sideLen(it.wall);let pos=c.pos!=null?c.pos+c.w+15:len/2;
     let k=0;while(S.items.some(o=>OPEN[o.type]&&o.wall===it.wall&&Math.abs(o.pos-pos)<(o.w+it.w)/2)&&k<12){pos+=40;if(pos>len-it.w/2)pos=it.w/2;k++}
     it.pos=pos;clampIt(it);S.items.push(it);selId=it.id;changed();return}
   let k=0; while(S.items.some(o=>Math.abs(o.x-it.x)<5&&Math.abs(o.y-it.y)<5)&&k<10){it.x+=20;it.y+=20;k++}
@@ -217,16 +277,20 @@ function addItem(c){
 }
 
 // ---------- room inputs ----------
-function roomUI(){ $('rk').value=S.kind; $('rw').value=S.W/100; $('rl').value=S.L/100; $('rh').value=S.H/100; }
-roomUI();
+function roomUI(){ $('rk').value=S.kind; $('rw').value=S.W/100; $('rl').value=S.L/100; $('rh').value=S.H/100; snapUI(); }
 ['rw','rl','rh'].forEach(id=>$(id).addEventListener('change',()=>{
-  const v=k=>Math.round(Math.min(Math.max(parseFloat($(k).value.replace(',','.'))||0,1),20)*100);
+  const v=k=>Math.round(Math.min(Math.max(parseFloat(String($(k).value).replace(',','.'))||0,1),30)*100);
   S.W=v('rw'); S.L=v('rl'); S.H=Math.min(Math.max(v('rh'),200),500);
   S.items.forEach(clampIt); roomUI(); changed();
 }));
 $('rk').addEventListener('change',()=>{S.kind=$('rk').value;
-  if(S.kind==='balcony'&&!S.items.some(i=>i.type==='bdoor'))addItem({...CAT.find(c=>c.type==='bdoor')}); else changed();});
-$('clear').onclick=()=>{ if(confirm('Tüm mobilyalar silinsin mi?')){S.items=[];selId=null;changed();} };
+  if(S.kind==='balcony'){for(const k of['S','W','E'])if(S.walls[k]==='full')S.walls[k]='glass';S.walls.N=S.walls.N==='none'?'full':S.walls.N;
+    if(!S.items.some(i=>i.type==='bdoor')){cat='bal';catsUI();palUI();addItem({...CATS.kp.items[2]});return}}
+  else{for(const k in S.walls)if(RAILS[S.walls[k]])S.walls[k]='full'}
+  changed();});
+$('clear').onclick=()=>{ if(confirm('Tüm eşyalar, kapılar ve pencereler silinsin mi?')){S.items=[];selId=null;changed();} };
+function snapUI(){const b=$('snap');b.textContent=S.snap?'🧲 Sınır: Açık':'🧲 Sınır: Kapalı';b.classList.toggle('off',!S.snap)}
+$('snap').onclick=()=>{S.snap=!S.snap;if(S.snap)S.items.forEach(clampIt);snapUI();changed()};
 
 // ---------- selection panel ----------
 function selUI(){
@@ -234,10 +298,18 @@ function selUI(){
   if(!it){p.classList.remove('on');return}
   p.classList.add('on');
   $('sname').textContent=it.name;
-  const op=!!OPEN[it.type]; $('lsd').style.display=op?'none':''; $('lss').style.display=it.type==='window'?'':'none'; $('ss').value=it.sill||0;
+  const op=!!OPEN[it.type], st=STYLES[it.type];
+  $('lst').style.display=st?'':'none';
+  if(st){const s=$('sst');s.innerHTML='';for(const k in st){const o=document.createElement('option');o.value=k;o.textContent=st[k];s.appendChild(o)}s.value=it.style}
+  $('lsd').style.display=op?'none':'';
+  $('lss').style.display=it.type==='window'?'':'none'; $('ss').value=it.sill||0;
+  $('lsh').style.display=it.full?'none':'';
   $('srot').textContent=op?'⇄ Çevir':'↻ Döndür';
   $('sw').value=it.w; $('sd').value=it.d; $('sh').value=it.h; $('sc').value=it.color;
 }
+$('sst').addEventListener('change',()=>{const it=cur();if(!it)return;it.style=$('sst').value;it.name=STYLES[it.type][it.style];
+  if(it.type==='barrier'){it.full=it.style==='full'?1:0;if(!it.full&&it.h>=S.H)it.h=BH[it.style]||110;it.color=it.style==='glass'?'#bfe3f5':it.style==='iron'?'#2b2b2b':it.style==='inox'?'#c3c7cb':'#efe7dd'}
+  clampIt(it);changed()});
 [['sw','w'],['sd','d'],['sh','h'],['ss','sill']].forEach(([id,k])=>$(id).addEventListener('change',()=>{
   const it=cur(); if(!it)return; const v=+$(id).value; if(v>0||(k==='sill'&&v>=0)){it[k]=v; clampIt(it); changed();}
 }));
@@ -251,15 +323,16 @@ function changed(){ save(); selUI(); draw(); if(mode==='3d') build3d(); }
 
 // ---------- 2D plan ----------
 const cv=$('plan'), ctx=cv.getContext('2d');
-let V={s:1,ox:0,oy:0,cw:0,ch:0};
+let V={s:1,ox:0,oy:0,cw:0,ch:0,freeze:false};
 function resize(){
   const r=$('stage').getBoundingClientRect(), dpr=window.devicePixelRatio||1;
   cv.width=r.width*dpr; cv.height=r.height*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
   V.cw=r.width; V.ch=r.height; draw(); if(R) resize3d();
 }
 function view(){
-  const pad=34, s=Math.min((V.cw-2*pad)/S.W,(V.ch-2*pad-10)/S.L);
-  V.s=s; V.ox=(V.cw-S.W*s)/2; V.oy=(V.ch-S.L*s)/2-6;
+  if(V.freeze)return;
+  const pad=38, s=Math.min((V.cw-2*pad)/S.W,(V.ch-2*pad-20)/S.L);
+  V.s=s; V.ox=(V.cw-S.W*s)/2; V.oy=(V.ch-S.L*s)/2+4;
 }
 const lum=h=>{const n=parseInt(h.slice(1),16);return(.299*(n>>16)+.587*(n>>8&255)+.114*(n&255))/255};
 function shade(h,f){const n=parseInt(h.slice(1),16);const c=[n>>16,n>>8&255,n&255].map(v=>Math.max(0,Math.min(255,Math.round(v*f))));return'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('')}
@@ -267,37 +340,47 @@ const fmt=v=>(v/100).toFixed(2).replace('.',',')+' m';
 function rrect(x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 const zi=t=>t==='rug'?0:t==='beam'?3:OPEN[t]?2:1;
 const order=()=>[...S.items].sort((a,b)=>zi(a.type)-zi(b.type));
+const WSTYLE={full:['#5a4f48',7,[]],half:['#9b8f86',6,[]],glass:['#6aa6c8',3,[]],iron:['#2b2b2b',3,[2,3]],inox:['#9aa0a6',3,[8,3]],halfglass:['#9b8f86',5,[]],none:['#d6ccc2',1.5,[3,5]]};
 
+function handlePos(it){ // resize knob (cm)
+  if(OPEN[it.type])return (it.wall==='N'||it.wall==='S')?{x:it.x+it.w/2,y:it.y}:{x:it.x,y:it.y+it.w/2};
+  const [fw,fd]=fp(it); return {x:it.x+fw/2,y:it.y+fd/2};
+}
 function draw(){
   if(!V.cw)return; view();
   const {s,ox,oy}=V;
   ctx.clearRect(0,0,V.cw,V.ch);
-  // floor
-  ctx.fillStyle='#f4ebdf'; ctx.fillRect(ox,oy,S.W*s,S.L*s);
-  ctx.strokeStyle='#e6dacb'; ctx.lineWidth=1;
+  ctx.fillStyle=S.kind==='balcony'?'#ece6df':'#f4ebdf'; ctx.fillRect(ox,oy,S.W*s,S.L*s);
+  ctx.strokeStyle='#e3d7c8'; ctx.lineWidth=1;
   for(let x=50;x<S.W;x+=50){ctx.beginPath();ctx.moveTo(ox+x*s,oy);ctx.lineTo(ox+x*s,oy+S.L*s);ctx.stroke()}
   for(let y=50;y<S.L;y+=50){ctx.beginPath();ctx.moveTo(ox,oy+y*s);ctx.lineTo(ox+S.W*s,oy+y*s);ctx.stroke()}
   // walls
   const X0=ox-3.5,Y0=oy-3.5,X1=ox+S.W*s+3.5,Y1=oy+S.L*s+3.5;
   const segs={N:[X0-3.5,Y0,X1+3.5,Y0],S:[X0-3.5,Y1,X1+3.5,Y1],W:[X0,Y0,X0,Y1],E:[X1,Y0,X1,Y1]};
-  for(const k in segs){const [a,b,c,d]=segs[k],rail=S.kind==='balcony'&&k!=='N',no=S.noWall[k];
-    ctx.strokeStyle=no?'#cfc4ba':rail?'#7d8f99':'#5a4f48';ctx.lineWidth=no?1.5:rail?3:7;ctx.setLineDash(no?[3,5]:rail?[10,4]:[]);
-    ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();}
-  ctx.setLineDash([]);
-  if(S.kind==='balcony'){ctx.fillStyle='#7d8f99';ctx.font='500 10px system-ui';ctx.textAlign='center';ctx.fillText('korkuluk',ox+S.W*s/2,Y1+12);ctx.fillText('bina duvarı',ox+S.W*s/2,Y0+12)}
+  for(const k in segs){const [a,b,c,d]=segs[k],[col,lw,dash]=WSTYLE[S.walls[k]];
+    ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();
+    if(S.walls[k]==='halfglass'){ctx.strokeStyle='#6aa6c8';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()}
+    ctx.setLineDash([]);
+    if(S.walls[k]!=='full'){ctx.save();ctx.fillStyle=col;ctx.font='500 10px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+      const mx=(a+c)/2,my=(b+d)/2;ctx.translate(mx+({W:12,E:-12}[k]||0),my+({N:11,S:-11}[k]||0));if(k==='W'||k==='E')ctx.rotate(-Math.PI/2);
+      ctx.fillText(WALLK[S.walls[k]].toLowerCase(),0,0);ctx.restore()}
+  }
+  // wall grips
+  if(!selId){ctx.fillStyle='#c8775a';for(const [gx,gy] of[[ox+S.W*s/2,Y0],[ox+S.W*s/2,Y1],[X0,oy+S.L*s/2],[X1,oy+S.L*s/2]]){ctx.globalAlpha=.85;ctx.beginPath();ctx.arc(gx,gy,6,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke()}}
   // dims
   ctx.fillStyle='#8a7f78'; ctx.font='600 12px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(fmt(S.W),ox+S.W*s/2,oy-18);
-  ctx.save(); ctx.translate(ox-18,oy+S.L*s/2); ctx.rotate(-Math.PI/2); ctx.fillText(fmt(S.L),0,0); ctx.restore();
-  ctx.fillStyle='#8a7f78'; ctx.font='600 12px system-ui';  // items
+  ctx.fillText(fmt(S.W),ox+S.W*s/2,oy-20);
+  ctx.save(); ctx.translate(ox-21,oy+S.L*s/2); ctx.rotate(-Math.PI/2); ctx.fillText(fmt(S.L),0,0); ctx.restore();
+  // items
   for(const it of order()){
-    if(OPEN[it.type]){if(!S.noWall[it.wall])drawOpening(it);continue}
+    if(OPEN[it.type]){if(S.walls[it.wall]==='full')drawOpening(it);continue}
     ctx.save(); ctx.translate(ox+it.x*s,oy+it.y*s); ctx.rotate(it.rot*Math.PI/180);
     const w=it.w*s,d=it.d*s;
     ctx.globalAlpha=it.type==='rug'?.85:it.type==='beam'?.55:1;
     if(it.type==='beam')ctx.setLineDash([6,4]);
     ctx.fillStyle=it.color; ctx.strokeStyle=shade(it.color,.7); ctx.lineWidth=1.5;
-    if(it.type==='plant'||it.type==='lamp'||it.type==='rtable'){ctx.beginPath();ctx.ellipse(0,0,w/2,d/2,0,0,Math.PI*2);ctx.fill();ctx.stroke()}
+    if(it.type==='barrier'){drawBarrier2D(it,w,d)}
+    else if(it.type==='plant'||it.type==='lamp'||it.type==='rtable'){ctx.beginPath();ctx.ellipse(0,0,w/2,d/2,0,0,Math.PI*2);ctx.fill();ctx.stroke()}
     else{rrect(-w/2,-d/2,w,d,Math.min(8,w*.1));ctx.fill();ctx.stroke()}
     if(STR[it.type]&&it.type!=='radiator'){ctx.save();rrect(-w/2,-d/2,w,d,2);ctx.clip();ctx.strokeStyle=shade(it.color,.6);ctx.lineWidth=1;
       for(let k=-w-d;k<w+d;k+=7){ctx.beginPath();ctx.moveTo(-w/2+k,-d/2);ctx.lineTo(-w/2+k+d,d/2);ctx.stroke()}ctx.restore();
@@ -306,13 +389,28 @@ function draw(){
     if(BACKED[it.type]){const bh=Math.max(3,Math.min(14,it.d*.18)*s);ctx.fillStyle=shade(it.color,.75);rrect(-w/2,-d/2,w,bh,3);ctx.fill()}
     if(it.type==='bed'){ctx.fillStyle='#ffffffcc';const pw=it.w>120?w/2-6:w-8;for(let i=0;i<(it.w>120?2:1);i++){rrect(-w/2+4+i*(pw+4),-d/2+Math.min(14,it.d*.18)*s+3,pw,Math.min(20*s,d*.15),4);ctx.fill()}}
     ctx.restore();
-    if(it.id===selId){const [fw,fd]=fp(it);ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='#c8775a';ctx.lineWidth=2;ctx.strokeRect(ox+(it.x-fw/2)*s-4,oy+(it.y-fd/2)*s-4,fw*s+8,fd*s+8);ctx.restore()}
-    const [fw]=fp(it); const fs=Math.max(9,Math.min(13,fw*s/7));
-    ctx.font=`600 ${fs}px system-ui`; ctx.fillStyle=lum(it.color)>.6?'#3a3330':'#fff';
-    if(fw*s>34) ctx.fillText(it.name,ox+it.x*s,oy+it.y*s+(it.id===selId?-7:0));
-    if(it.id===selId){ctx.font='500 10px system-ui';ctx.fillText(`${fw}×${fp(it)[1]}`,ox+it.x*s,oy+it.y*s+8)}
+    const [fw,fd]=fp(it);
+    if(it.id===selId){ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='#c8775a';ctx.lineWidth=2;ctx.strokeRect(ox+(it.x-fw/2)*s-4,oy+(it.y-fd/2)*s-4,fw*s+8,fd*s+8);ctx.restore()}
+    const fs=Math.max(9,Math.min(13,fw*s/7));
+    ctx.font=`600 ${fs}px system-ui`; ctx.fillStyle=it.type==='barrier'?'#3a3330':lum(it.color)>.6?'#3a3330':'#fff';
+    const thin=it.type==='barrier'&&Math.min(fw,fd)*s<16;
+    if(fw*s>34&&!thin) ctx.fillText(it.name,ox+it.x*s,oy+it.y*s+(it.id===selId?-7:0));
+    if(it.id===selId){ctx.font='500 10px system-ui';if(thin)ctx.fillStyle='#c8775a';ctx.fillText(thin?`${it.name} ${it.w} cm`:`${fw}×${fd}`,ox+it.x*s,oy+it.y*s+(thin?-(fd*s/2+12):8))}
   }
-  if(!S.items.length){ctx.fillStyle='#b3a69c';ctx.font='500 14px system-ui';ctx.fillText('👇 Aşağıdan bir mobilya ekle',V.cw/2,V.ch/2)}
+  // resize knob
+  const sit=cur(); if(sit&&mode==='2d'&&(!OPEN[sit.type]||S.walls[sit.wall]==='full')){const h=handlePos(sit);const hx=ox+h.x*s,hy=oy+h.y*s;
+    ctx.fillStyle='#c8775a';ctx.beginPath();ctx.arc(hx,hy,8,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+    ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(hx-3,hy-3);ctx.lineTo(hx+3,hy+3);ctx.moveTo(hx+3,hy-1);ctx.lineTo(hx+3,hy+3);ctx.lineTo(hx-1,hy+3);ctx.stroke()}
+  if(!S.items.length){ctx.fillStyle='#b3a69c';ctx.font='500 14px system-ui';ctx.fillText('👇 Aşağıdan bir şey ekle',V.cw/2,V.ch/2)}
+}
+function drawBarrier2D(it,w,d){
+  const st=it.style;
+  if(st==='full'||st==='half'||st==='halfglass'){ctx.fillStyle=st==='full'?'#8a7d72':'#b9ada3';ctx.fillRect(-w/2,-d/2,w,d);ctx.strokeStyle='#5a4f48';ctx.lineWidth=1;ctx.strokeRect(-w/2,-d/2,w,d);
+    if(st==='halfglass'){ctx.strokeStyle='#6aa6c8';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-w/2,0);ctx.lineTo(w/2,0);ctx.stroke()}return}
+  const col=st==='glass'?'#6aa6c8':st==='iron'?'#2b2b2b':'#9aa0a6';
+  ctx.fillStyle=st==='glass'?'#cfe8f5':'#eeeeee';ctx.fillRect(-w/2,-Math.max(d,4)/2,w,Math.max(d,4));
+  ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash(st==='iron'?[2,3]:st==='inox'?[8,3]:[]);ctx.beginPath();ctx.moveTo(-w/2,0);ctx.lineTo(w/2,0);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=col;for(const x of[-w/2,w/2])ctx.fillRect(x-2,-3,4,6);
 }
 function drawOpening(it){
   const {s,ox,oy}=V, w=it.w*s;
@@ -320,38 +418,72 @@ function drawOpening(it){
   ctx.save(); ctx.translate(T[0],T[1]); ctx.rotate(T[2]);
   ctx.fillStyle='#fff'; ctx.fillRect(-w/2,-8,w,9);
   ctx.strokeStyle='#5a4f48'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-w/2,-8);ctx.lineTo(-w/2,1);ctx.moveTo(w/2,-8);ctx.lineTo(w/2,1);ctx.stroke();
-  if(it.type==='window'){ctx.fillStyle='#cfe8f5';ctx.fillRect(-w/2,-6,w,5);ctx.strokeStyle='#6aa6c8';ctx.lineWidth=1;ctx.strokeRect(-w/2,-6,w,5);ctx.beginPath();ctx.moveTo(-w/2,-3.5);ctx.lineTo(w/2,-3.5);ctx.stroke()}
-  else{const hx=it.flip?w/2:-w/2, sg=it.flip?-1:1;
-    ctx.fillStyle=it.type==='bdoor'?'#cfe8f5':'#f4ebdf'; ctx.fillRect(-w/2,-7,w,7);
-    ctx.strokeStyle=it.type==='bdoor'?'#6aa6c8':shade(it.color,.8); ctx.lineWidth=2.5;
+  const glassC='#cfe8f5',glassL='#6aa6c8';
+  if(it.type==='window'){
+    ctx.fillStyle=glassC;ctx.fillRect(-w/2,-6,w,5);ctx.strokeStyle=glassL;ctx.lineWidth=1;ctx.strokeRect(-w/2,-6,w,5);
+    if(it.style==='surme'){ctx.beginPath();ctx.moveTo(-w/2,-4.5);ctx.lineTo(w*.05,-4.5);ctx.moveTo(-w*.05,-2.5);ctx.lineTo(w/2,-2.5);ctx.stroke()}
+    else{const n={iki:2,uc:3,boy:2}[it.style]||1;for(let i=1;i<n;i++){const x=-w/2+w*i/n;ctx.beginPath();ctx.moveTo(x,-6);ctx.lineTo(x,-1);ctx.stroke()}
+      if(it.style!=='sabit'&&it.style!=='vasistas'){ctx.setLineDash([2,2]);for(let i=0;i<n;i++){const a=-w/2+w*i/n,sw=w/n;ctx.beginPath();ctx.moveTo(a,-1);ctx.lineTo(a+sw/2,sw*.35);ctx.lineTo(a+sw,-1);ctx.stroke()}ctx.setLineDash([])}}
+  } else if(it.style==='surgu'){
+    ctx.fillStyle=glassC;ctx.fillRect(-w/2,-7,w,7);ctx.strokeStyle=glassL;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(-w/2,-5);ctx.lineTo(w*.05,-5);ctx.moveTo(-w*.05,-2);ctx.lineTo(w/2,-2);ctx.stroke();
+    ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-w*.25,4);ctx.lineTo(w*.25,4);ctx.moveTo(w*.18,1);ctx.lineTo(w*.25,4);ctx.lineTo(w*.18,7);ctx.stroke();
+  } else {
+    const hx=it.flip?w/2:-w/2, sg=it.flip?-1:1, isB=it.type==='bdoor';
+    ctx.fillStyle=isB?glassC:'#f4ebdf'; ctx.fillRect(-w/2,-7,w,7);
+    ctx.strokeStyle=isB?glassL:shade(it.color,.8); ctx.lineWidth=it.style==='dis'?4:2.5;
     ctx.beginPath();ctx.moveTo(hx,0);ctx.lineTo(hx,w);ctx.stroke();
     ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.beginPath();
     if(sg>0)ctx.arc(hx,0,w,Math.PI/2,0,true);else ctx.arc(hx,0,w,Math.PI/2,Math.PI,false);
-    ctx.stroke();ctx.setLineDash([])}
+    ctx.stroke();ctx.setLineDash([]);
+  }
   ctx.restore();
   if(it.id===selId){const [fw,fd]=fp(it);ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='#c8775a';ctx.lineWidth=2;ctx.strokeRect(ox+(it.x-fw/2)*s-4,oy+(it.y-fd/2)*s-4,fw*s+8,fd*s+8);ctx.restore();
     ctx.fillStyle='#c8775a';ctx.font='600 11px system-ui';ctx.textAlign='center';
-    const lx=ox+it.x*s+({W:30,E:-30}[it.wall]||0), ly=oy+it.y*s+({N:22,S:-22}[it.wall]||0);
-    ctx.fillText(it.name+' '+it.w+' cm',lx,ly)}
+    const lx=ox+it.x*s+({W:34,E:-34}[it.wall]||0), ly=oy+it.y*s+({N:22,S:-22}[it.wall]||0);
+    ctx.fillText(it.w+' cm',lx,ly)}
 }
 const toCm=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left-V.ox)/V.s,y:(e.clientY-r.top-V.oy)/V.s}};
 function pick(p){
   const arr=order().reverse();
-  for(const it of arr){const [fw,fd]=fp(it);if(Math.abs(p.x-it.x)<=fw/2+4&&Math.abs(p.y-it.y)<=fd/2+4)return it}
+  for(const it of arr){if(OPEN[it.type]&&S.walls[it.wall]!=='full')continue;const [fw,fd]=fp(it);const pad=Math.max(4,10/V.s);
+    if(Math.abs(p.x-it.x)<=fw/2+pad&&Math.abs(p.y-it.y)<=fd/2+pad)return it}
   return null;
 }
+function wallAt(p){const tol=16/V.s;
+  if(p.x>-tol&&p.x<S.W+tol){if(Math.abs(p.y)<tol)return'N';if(Math.abs(p.y-S.L)<tol)return'S'}
+  if(p.y>-tol&&p.y<S.L+tol){if(Math.abs(p.x)<tol)return'W';if(Math.abs(p.x-S.W)<tol)return'E'}
+  return null}
 cv.addEventListener('pointerdown',e=>{
-  const p=toCm(e), it=pick(p);
-  if(it){selId=it.id;drag={id:it.id,dx:OPEN[it.type]?0:p.x-it.x,dy:OPEN[it.type]?0:p.y-it.y};cv.setPointerCapture(e.pointerId)}
-  else selId=null;
+  const p=toCm(e), sit=cur();
+  if(sit){const h=handlePos(sit);if(Math.hypot(p.x-h.x,p.y-h.y)<18/V.s){
+    const [fw,fd]=fp(sit);drag={kind:'size',id:sit.id,left:sit.x-fw/2,top:sit.y-fd/2,start:sit.pos-sit.w/2};cv.setPointerCapture(e.pointerId);return}}
+  const it=pick(p);
+  if(it){selId=it.id;drag={kind:'move',id:it.id,dx:OPEN[it.type]?0:p.x-it.x,dy:OPEN[it.type]?0:p.y-it.y};cv.setPointerCapture(e.pointerId)}
+  else{selId=null;const w=wallAt(p);if(w){drag={kind:'wall',side:w};V.freeze=true;cv.setPointerCapture(e.pointerId)}}
   selUI(); draw();
 });
 cv.addEventListener('pointermove',e=>{
-  if(!drag)return; const it=S.items.find(i=>i.id===drag.id); if(!it)return;
-  const p=toCm(e); if(OPEN[it.type]){placeOpening(it,p.x,p.y);draw();return}
-  it.x=Math.round((p.x-drag.dx)/5)*5; it.y=Math.round((p.y-drag.dy)/5)*5; clampIt(it); draw();
+  if(!drag)return; const p=toCm(e);
+  if(drag.kind==='wall'){
+    const sd=drag.side,mn=50,mx=3000;
+    if(sd==='E')S.W=Math.min(mx,Math.max(mn,rnd(p.x)));
+    else if(sd==='S')S.L=Math.min(mx,Math.max(mn,rnd(p.y)));
+    else{const dl=rnd(sd==='W'?p.x:p.y);const nv=(sd==='W'?S.W:S.L)-dl;
+      if(dl!==0&&nv>=mn&&nv<=mx){
+        if(sd==='W'){S.W=nv;V.ox+=dl*V.s;for(const i of S.items){if(OPEN[i.type]){if(i.wall==='N'||i.wall==='S')i.pos-=dl}else i.x-=dl}}
+        else{S.L=nv;V.oy+=dl*V.s;for(const i of S.items){if(OPEN[i.type]){if(i.wall==='W'||i.wall==='E')i.pos-=dl}else i.y-=dl}}}}
+    S.items.forEach(clampIt); roomUI(); draw(); return}
+  const it=S.items.find(i=>i.id===drag.id); if(!it)return;
+  if(drag.kind==='size'){
+    if(OPEN[it.type]){const along=(it.wall==='N'||it.wall==='S')?p.x:p.y;it.w=Math.max(30,rnd(along-drag.start));it.pos=drag.start+it.w/2;clampIt(it)}
+    else{const nf=Math.max(5,rnd(p.x-drag.left)),nd=Math.max(1,rnd(p.y-drag.top));
+      if(it.rot%180){it.w=nd;it.d=nf}else{it.w=nf;it.d=nd} it.x=drag.left+nf/2;it.y=drag.top+nd/2;clampIt(it)}
+    selUI();draw();return}
+  if(OPEN[it.type]){placeOpening(it,p.x,p.y);draw();return}
+  it.x=rnd(p.x-drag.dx); it.y=rnd(p.y-drag.dy); clampIt(it); draw();
 });
-const end=()=>{if(drag){drag=null;save()}};
+const end=()=>{if(drag){const wasWall=drag.kind==='wall';drag=null;V.freeze=false;if(wasWall)roomUI();changed()}};
 cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end);
 
 // ---------- 3D ----------
@@ -377,12 +509,31 @@ function resetCam(){
 function resize3d(){const r=$('stage').getBoundingClientRect();R.setSize(r.width,r.height);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}
 const MATS={};
 const mat=(c,o={})=>{const k=c+JSON.stringify(o);return MATS[k]||(MATS[k]=new THREE.MeshStandardMaterial({color:c,roughness:.8,...o}))};
-function box(g,w,h,d,c,x,y,z,o){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c,o));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;g.add(m);return m}
+const GLASS={transparent:true,opacity:.3,roughness:.1,depthWrite:false};
+const METAL={metalness:.6,roughness:.35};
+function box(g,w,h,d,c,x,y,z,o){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c,o));m.position.set(x,y,z);m.castShadow=!(o&&o.transparent);m.receiveShadow=true;g.add(m);return m}
 function cyl(g,rt,rb,h,c,x,y,z,o){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,24),mat(c,o));m.position.set(x,y,z);m.castShadow=true;g.add(m);return m}
 function legs(g,w,d,h,c,t=.045){for(const sx of[-1,1])for(const sz of[-1,1])box(g,t,h,t,c,sx*(w/2-t),h/2,sz*(d/2-t))}
+// barrier along local x, centred, from floor up
+function barrier(g,kind,len,th,h){
+  const wc='#efe7dd';
+  if(kind==='full'||kind==='half'){box(g,len,h,th,wc,0,h/2,0);if(kind==='half')box(g,len+.02,.04,th+.04,'#e6e1da',0,h+.02,0);return}
+  if(kind==='halfglass'){const ph=.5,pt=Math.max(th,.12);box(g,len,ph,pt,wc,0,ph/2,0);box(g,len+.02,.04,pt+.04,'#e6e1da',0,ph+.02,0);
+    box(g,len-.04,h-ph-.06,.02,'#bfe3f5',0,ph+.04+(h-ph-.06)/2,0,GLASS);box(g,len,.04,.05,'#8a8f94',0,h-.02,0,METAL);
+    const n=Math.max(1,Math.round(len/1.2));for(let i=0;i<=n;i++)box(g,.03,h-ph,.03,'#8a8f94',-len/2+len*i/n,ph+(h-ph)/2,0,METAL);return}
+  if(kind==='glass'){box(g,len-.02,h-.12,.02,'#bfe3f5',0,.06+(h-.12)/2,0,GLASS);box(g,len,.05,.06,'#8a8f94',0,h-.025,0,METAL);
+    const n=Math.max(1,Math.round(len/1.2));for(let i=0;i<=n;i++)box(g,.04,h,.04,'#8a8f94',-len/2+len*i/n,h/2,0,METAL);return}
+  if(kind==='iron'){const c='#2b2b2b';box(g,len,.04,.04,c,0,h-.02,0,METAL);box(g,len,.03,.03,c,0,.09,0,METAL);
+    const n=Math.max(1,Math.round(len/.11));for(let i=0;i<=n;i++)box(g,.015,h-.06,.015,c,-len/2+len*i/n,(h-.06)/2+.03,0,METAL);
+    for(let i=0;i<n;i+=3){const x=-len/2+len*(i+.5)/n;const r=new THREE.Mesh(new THREE.TorusGeometry(.035,.006,6,16),mat(c,METAL));r.position.set(x,h*.62,0);g.add(r)}return}
+  if(kind==='inox'){const c='#c3c7cb';const n=Math.max(1,Math.round(len/1.2));for(let i=0;i<=n;i++)box(g,.045,h,.045,c,-len/2+len*i/n,h/2,0,METAL);
+    const rail=(y,r)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,12),mat(c,METAL));m.rotation.z=Math.PI/2;m.position.set(0,y,0);m.castShadow=true;g.add(m)};
+    rail(h-.025,.025);for(const f of[.2,.4,.6,.8])rail(h*f,.01);return}
+}
 function makeItem(it){
   const g=new THREE.Group(), w=it.w/100,d=it.d/100,h=Math.max(it.h,1)/100,c=it.color,dk=shade(c,.78);
   switch(it.type){
+    case'barrier':barrier(g,it.style,w,Math.max(d,.02),it.full?S.H/100:h);break;
     case'sofa':{const aw=Math.min(.18,w*.14);box(g,w,h*.45,d,c,0,h*.225,0);box(g,w,h,d*.22,dk,0,h/2,-d/2+d*.11);
       for(const s of[-1,1])box(g,aw,h*.65,d,dk,s*(w/2-aw/2),h*.325,0);
       const n=w>1.3?2:1,cw=(w-2*aw)/n;for(let i=0;i<n;i++)box(g,cw-.02,.1,d*.72,shade(c,1.08),-w/2+aw+cw*(i+.5),h*.45+.05,d*.11);break}
@@ -396,9 +547,9 @@ function makeItem(it){
     case'tv':{box(g,w,h,d,c,0,h/2,0);const sw=Math.min(w*.8,1.45),shh=sw*.57;box(g,.25,.02,.15,'#222',0,h+.01,0);box(g,.04,.08,.04,'#222',0,h+.05,0);
       box(g,sw,shh,.04,'#111',0,h+.09+shh/2,0,{roughness:.3});break}
     case'shelf':{box(g,w,h,.015,dk,0,h/2,-d/2+.008);for(const s of[-1,1])box(g,.02,h,d,c,s*(w/2-.01),h/2,0);
-      const n=Math.max(2,Math.floor(h/.35));const cols=['#a34a3c','#3e5f7a','#d9b45a','#5f7e57','#7a5a7e','#e0d6c8'];
+      const n=Math.max(2,Math.floor(h/.35));const cols=['#a34a3c','#3e5f7a','#d9b45a','#5f7e57','#7a5a7e','#e0d6c8'];let seed=it.id.charCodeAt(0)*7+3;const rr=()=>((seed=(seed*9301+49297)%233280)/233280);
       for(let i=0;i<=n;i++){const y=.01+i*(h-.02)/n;box(g,w,.02,d,c,0,y,0);
-        if(i<n){let x=-w/2+.04,k=i;while(x<w/2-.08&&Math.random()>.12){const bw=.025+Math.random()*.03,bh=Math.min(.28,(h-.02)/n-.04)*(.75+Math.random()*.25);box(g,bw,bh,d*.75,cols[k++%cols.length],x+bw/2,y+.01+bh/2,0);x+=bw+.004}}}
+        if(i<n){let x=-w/2+.04,k=i;while(x<w/2-.08&&rr()>.12){const bw=.025+rr()*.03,bh=Math.min(.28,(h-.02)/n-.04)*(.75+rr()*.25);box(g,bw,bh,d*.75,cols[k++%cols.length],x+bw/2,y+.01+bh/2,0);x+=bw+.004}}}
       break}
     case'column':case'shaft':case'ledge':box(g,w,h,d,c,0,h/2,0);break;
     case'sillbox':box(g,w,h,d,c,0,h/2,0);box(g,w+.04,.03,d+.04,'#e9e5df',0,h+.015,.0);break;
@@ -417,49 +568,73 @@ function makeItem(it){
   g.userData.id=it.id;
   return g;
 }
+// opening model: local x along wall, y up from sill, z through wall
+function makeOpening(op,ow,oh,t){
+  const og=new THREE.Group(); og.userData.id=op.id;
+  const st=op.style, f=.05, fc=op.type==='door'?(st==='dis'?'#2a2a2a':'#e8e0d6'):op.color;
+  const jamb=()=>{box(og,f,oh,t+.02,fc,-ow/2+f/2,oh/2,0);box(og,f,oh,t+.02,fc,ow/2-f/2,oh/2,0);box(og,ow,f,t+.02,fc,0,oh-f/2,0)};
+  const hand=(x,y,c='#b8b8b8')=>{for(const sd of[-1,1])box(og,.12,.025,.03,c,x,y,sd*.035,METAL)};
+  const sx=op.flip?-1:1;
+  if(op.type==='door'){jamb();
+    if(st==='dis'){box(og,ow-2*f,oh-f,.06,op.color,0,(oh-f)/2,0,{roughness:.5});
+      for(const yy of[.35,.85,1.45])box(og,ow-2*f-.16,.012,.07,shade(op.color,1.25),0,yy,0);
+      hand(sx*(ow/2-.14),1.0,'#c9a96a');box(og,.02,.02,.08,'#c9a96a',0,1.55,0)}
+    else{box(og,ow-2*f,oh-f,.04,op.color,0,(oh-f)/2,0);for(const yy of[.55,1.45])box(og,ow-2*f-.18,.5,.046,shade(op.color,.93),0,yy,0);hand(sx*(ow/2-.12),1.0,'#c0a060')}
+    return og}
+  if(op.type==='bdoor'){jamb();
+    if(st==='surgu'){const pw=(ow-2*f)/2+.03;for(const [i,zz] of[[-1,-.02],[1,.02]]){const x=i*(ow-2*f)/4;
+        box(og,pw,oh-f,.012,'#bfe3f5',x,(oh-f)/2,zz,GLASS);box(og,.04,oh-f,.05,fc,x-i*pw/2+i*.02,(oh-f)/2,zz)}
+      box(og,ow,.04,t+.02,'#999',0,.02,0,METAL);box(og,.02,.25,.04,'#888',0,1,.05,METAL)}
+    else{box(og,ow-2*f,.1,.05,fc,0,.05,0);box(og,ow-2*f,oh-f-.1,.012,'#bfe3f5',0,.1+(oh-f-.1)/2,0,GLASS);box(og,ow-2*f,.05,.05,fc,0,.95,0);hand(sx*(ow/2-.12),1.05,'#999')}
+    return og}
+  // windows
+  jamb(); box(og,ow,f,t+.04,fc,0,f/2,0);
+  const iw=ow-2*f,ih=oh-2*f;
+  if(st==='surme'){for(const [i,zz] of[[-1,-.02],[1,.02]]){const x=i*iw/4;box(og,iw/2+.03,ih,.012,'#bfe3f5',x,f+ih/2,zz,GLASS);box(og,.04,ih,.05,fc,x-i*(iw/4+.015),f+ih/2,zz)}return og}
+  const n={iki:2,uc:3,boy:2}[st]||1;
+  for(let i=1;i<n;i++)box(og,.06,ih,.06,fc,-iw/2+iw*i/n,f+ih/2,0);
+  box(og,iw,ih,.01,'#bfe3f5',0,f+ih/2,0,GLASS);
+  if(st==='vasistas'){box(og,.1,.02,.03,'#bbb',0,oh-f-.04,.04,METAL)}
+  else if(st!=='sabit'){for(let i=0;i<n;i++){const cx=-iw/2+iw*(i+.5)/n,sw=iw/n;box(og,.02,.12,.03,'#cfcfcf',cx+(i%2?-1:1)*(sw/2-.06),f+ih/2,.04,METAL)}}
+  if(st==='boy'){box(og,ow,.03,.06,'#2b2b2b',0,.95,.08,METAL);for(let i=0;i<=8;i++)box(og,.012,.9,.012,'#2b2b2b',-ow/2+ow*i/8,.47,.08,METAL)}
+  return og;
+}
 let lastRoom='';
 function build3d(){
   if(!R)return;
   roomG.traverse(o=>{if(o.geometry)o.geometry.dispose()}); roomG.clear(); walls=[];
   const W=S.W/100,L=S.L/100,H=S.H/100,t=.1;
-  const fl=new THREE.Mesh(new THREE.BoxGeometry(W,.04,L),mat('#d6b994',{roughness:.7}));fl.position.y=-.02;fl.receiveShadow=true;roomG.add(fl);
   const bal=S.kind==='balcony';
-  scene.background.set(bal?'#cfe6f3':'#f6f1ea'); fl.material=mat(bal?'#c9bcae':'#d6b994',{roughness:.7});
-  const wc='#efe7dd', glass={transparent:true,opacity:.3,roughness:.1,depthWrite:false};
+  scene.background.set(bal?'#cfe6f3':'#f6f1ea');
+  const fl=new THREE.Mesh(new THREE.BoxGeometry(W,.04,L),mat(bal?'#c9bcae':'#d6b994',{roughness:.7}));fl.position.y=-.02;fl.receiveShadow=true;roomG.add(fl);
+  const wc='#efe7dd';
   const SD={N:{len:W,n:[0,0,-1],lim:L/2},S:{len:W,n:[0,0,1],lim:L/2},W:{len:L,n:[-1,0,0],lim:W/2},E:{len:L,n:[1,0,0],lim:W/2}};
-  // u: metres along the wall, y0..y1 height -> box on wall line
-  const at=(k,u)=>k==='N'?[u-W/2,-L/2-t/2]:k==='S'?[u-W/2,L/2+t/2]:k==='W'?[-W/2-t/2,u-L/2]:[W/2+t/2,u-L/2];
+  const at=(k,u,o=t/2)=>k==='N'?[u-W/2,-L/2-o]:k==='S'?[u-W/2,L/2+o]:k==='W'?[-W/2-o,u-L/2]:[W/2+o,u-L/2];
   for(const k in SD){
     const g=new THREE.Group(); g.userData={n:new THREE.Vector3(...SD[k].n),lim:SD[k].lim}; walls.push(g); roomG.add(g);
-    if(S.noWall[k])continue;
-    const len=SD[k].len, horiz=(k==='N'||k==='S'), rail=bal&&k!=='N';
-    const piece=(u0,u1,y0,y1,c,o,th=t)=>{if(u1-u0<.005||y1-y0<.005)return;const [x,z]=at(k,(u0+u1)/2);
-      const m=box(g,horiz?u1-u0:th,y1-y0,horiz?th:u1-u0,c,x,(y0+y1)/2,z,o);if(o&&o.transparent)m.castShadow=false};
-    if(k==='N'||k==='S'){const ch=rail?1.05:H;for(const u of[-t/2,len+t/2])piece(u-t/2,u+t/2,0,ch,rail?'#777777':wc)}
-    if(rail){piece(0,len,0,1,'#bfe3f5',glass,.02);piece(0,len,1,1.05,'#777777',undefined,.06);
-      const n=Math.max(1,Math.round(len/1.2));for(let i=0;i<=n;i++){const u=len*i/n;piece(u-.02,u+.02,0,1,'#777777',undefined,.04)}
-      continue}
+    const kind=S.walls[k]; if(kind==='none')continue;
+    const len=SD[k].len, horiz=(k==='N'||k==='S');
+    if(kind!=='full'){const th=(kind==='half'||kind==='halfglass')?.15:.04, ext=horiz?2*t:0;
+      const bg=new THREE.Group();const [x,z]=at(k,len/2,th/2);bg.position.set(x,0,z);if(!horiz)bg.rotation.y=Math.PI/2;
+      barrier(bg,kind,len+ext,th,(BH[kind]||110)/100);g.add(bg);continue}
+    const piece=(u0,u1,y0,y1)=>{if(u1-u0<.005||y1-y0<.005)return;const [x,z]=at(k,(u0+u1)/2);box(g,horiz?u1-u0:t,y1-y0,horiz?t:u1-u0,wc,x,(y0+y1)/2,z)};
+    if(horiz){piece(-t,0,0,H);piece(len,len+t,0,H)}
     const ops=S.items.filter(i=>OPEN[i.type]&&i.wall===k).sort((a,b)=>a.pos-b.pos);
     let cu=0;
     for(const op of ops){
       const a=Math.max(cu,(op.pos-op.w/2)/100),b=(op.pos+op.w/2)/100,sl=(op.sill||0)/100,top=Math.min(H,sl+op.h/100);
       if(b<=a)continue;
-      piece(cu,a,0,H,wc); piece(a,b,top,H,wc); piece(a,b,0,sl,wc);
-      const og=new THREE.Group();og.userData.id=op.id;const ow=b-a,oh=top-sl,[x,z]=at(k,(a+b)/2); og.position.set(x,sl,z); if(!horiz)og.rotation.y=Math.PI/2; g.add(og);
-      const fr=op.type==='door'?'#e8e0d6':'#ffffff',f=.05;
-      box(og,f,oh,t+.02,fr,-ow/2+f/2,oh/2,0);box(og,f,oh,t+.02,fr,ow/2-f/2,oh/2,0);box(og,ow,f,t+.02,fr,0,oh-f/2,0);
-      if(op.type==='window'){box(og,ow,f,t+.04,fr,0,f/2,0);box(og,.03,oh,.04,fr,0,oh/2,0);const gm=box(og,ow-2*f,oh-2*f,.01,'#bfe3f5',0,oh/2,0,glass);gm.castShadow=false}
-      else if(op.type==='bdoor'){box(og,ow-2*f,.08,.04,fr,0,.04,0);const gm=box(og,ow-2*f,oh-f-.08,.01,'#bfe3f5',0,(oh-f+.08)/2,0,glass);gm.castShadow=false;box(og,.03,.15,.05,'#888',(op.flip?-1:1)*(ow/2-.12),1,0)}
-      else{box(og,ow-2*f,oh-f,.04,op.color,0,(oh-f)/2,0);for(const sd of[-1,1])box(og,.12,.025,.03,'#c0a060',(op.flip?-1:1)*(ow/2-.12),1,sd*.035)}
+      piece(cu,a,0,H); piece(a,b,top,H); piece(a,b,0,sl);
+      const og=makeOpening(op,b-a,top-sl,t),[x,z]=at(k,(a+b)/2); og.position.set(x,sl,z); if(!horiz)og.rotation.y=Math.PI/2; g.add(og);
       cu=b;
     }
-    piece(cu,len,0,H,wc);
+    piece(cu,len,0,H);
   }
   for(const it of S.items) if(!OPEN[it.type]) roomG.add(makeItem(it));
   roomG.updateMatrixWorld(true);
   if(selId){let sg=null;roomG.traverse(o=>{if(o.userData.id===selId)sg=o});
     if(sg){const bh=new THREE.BoxHelper(sg,'#c8775a');bh.material.depthTest=false;bh.renderOrder=9;roomG.add(bh)}}
-  const sun=scene.userData.sun,m=Math.max(W,L);const sc=sun.shadow.camera;sc.left=sc.bottom=-m;sc.right=sc.top=m;sc.near=.5;sc.far=30;sc.updateProjectionMatrix();
+  const sun=scene.userData.sun,m=Math.max(W,L)+1;const sc=sun.shadow.camera;sc.left=sc.bottom=-m;sc.right=sc.top=m;sc.near=.5;sc.far=30;sc.updateProjectionMatrix();
   const key=S.W+'x'+S.L; if(key!==lastRoom){lastRoom=key;resetCam()}
 }
 function loop(){
@@ -467,11 +642,12 @@ function loop(){
   for(const w of walls){w.visible=S.view3==='full'||!(cam.position.dot(w.userData.n)>w.userData.lim)}
   R.render(scene,cam);
 }
+const HINT2='Dokun: seç • sürükle: taşı • turuncu nokta: boyut / duvar çek';
 function setMode(m){
   mode=m; $('t2').classList.toggle('on',m==='2d'); $('t3').classList.toggle('on',m==='3d');
   $('plan').style.display=m==='2d'?'block':'none'; $('view3d').style.display=m==='3d'?'block':'none';
-  $('hint').textContent=m==='2d'?'Aşağıdan mobilya ekle • parmağınla sürükle • dokunarak seç':'Tek parmakla çevir • iki parmakla yakınlaştır';
-  $('vtog').style.display=m==='3d'?'block':'none'; vUI();
+  $('hint').textContent=m==='2d'?HINT2:'Boşlukta kaydır: çevir • iki parmak: yakınlaştır • eşyayı sürükle: taşı';
+  $('vtog').style.display=m==='3d'?'block':'none'; $('snap').style.display=m==='2d'?'block':'none'; vUI();
   if(m==='3d'){ if(!R)init3d(); resize3d(); build3d(); if(!running){running=true;loop()} } else { running=false; draw(); }
 }
 function vUI(){$('vtog').textContent=S.view3==='full'?'👁 Tam görünüm':'👁 Kesit görünüm'}
@@ -481,15 +657,16 @@ const rc=new THREE.Raycaster(),fplane=new THREE.Plane(new THREE.Vector3(0,1,0),0
 function ndc(e){const r=R.domElement.getBoundingClientRect();return new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1)}
 function floorCm(e){rc.setFromCamera(ndc(e),cam);const p=new THREE.Vector3();if(!rc.ray.intersectPlane(fplane,p))return null;return{x:(p.x+S.W/200)*100,y:(p.z+S.L/200)*100}}
 function hitId(e){rc.setFromCamera(ndc(e),cam);const hs=rc.intersectObjects(roomG.children,true);
-  for(const h of hs){let o=h.object;if(!o.visible)continue;let vis=true,q=o;while(q){if(!q.visible)vis=false;q=q.parent}if(!vis)continue;
-    while(o&&!o.userData.id)o=o.parent;if(o)return o.userData.id;if(h.object.type==='Mesh')return null}return null}
+  for(const h of hs){let o=h.object;let vis=true,q=o;while(q){if(!q.visible)vis=false;q=q.parent}if(!vis)continue;
+    if(o.type!=='Mesh')continue;
+    while(o&&!o.userData.id)o=o.parent;if(o)return o.userData.id;return null}return null}
 function bind3d(){
   const el=R.domElement;
   el.addEventListener('pointerdown',e=>{const id=hitId(e);d3={x:e.clientX,y:e.clientY,id,moved:false};
     if(id){const it=S.items.find(i=>i.id===id),p=floorCm(e);ctrl.enabled=false;d3.dx=p&&!OPEN[it.type]?p.x-it.x:0;d3.dy=p&&!OPEN[it.type]?p.y-it.y:0;el.setPointerCapture(e.pointerId)}});
   el.addEventListener('pointermove',e=>{if(!d3||!d3.id)return;if(Math.hypot(e.clientX-d3.x,e.clientY-d3.y)<6&&!d3.moved)return;
     d3.moved=true;const it=S.items.find(i=>i.id===d3.id),p=floorCm(e);if(!it||!p)return;
-    if(OPEN[it.type])placeOpening(it,p.x,p.y);else{it.x=Math.round((p.x-d3.dx)/5)*5;it.y=Math.round((p.y-d3.dy)/5)*5;clampIt(it)}
+    if(OPEN[it.type])placeOpening(it,p.x,p.y);else{it.x=rnd(p.x-d3.dx);it.y=rnd(p.y-d3.dy);clampIt(it)}
     selId=it.id;build3d()});
   const up=e=>{if(!d3)return;const moved=Math.hypot(e.clientX-d3.x,e.clientY-d3.y)>=6;
     if(d3.id){selId=d3.id;save();selUI();build3d()}else if(!moved){selId=null;selUI();build3d()}
@@ -498,7 +675,7 @@ function bind3d(){
 }
 $('t2').onclick=()=>setMode('2d'); $('t3').onclick=()=>setMode('3d');
 new ResizeObserver(resize).observe($('stage'));
-resize(); selUI();
+roomUI(); setMode('2d'); selUI(); save();
 </script>
 </body>
 </html>
